@@ -1,0 +1,5 @@
+[@ww.label labelKey="push0ver.task.localdir" name="tasklocaldir"/]
+[@ww.label labelKey="push0ver.task.username" name="taskusername"/]
+[@ww.label labelKey="push0ver.task.password" name="taskpassword"/]
+[@ww.label labelKey="push0ver.task.url" name="taskurl"/]
+[@ww.label labelKey="push0ver.task.client" name="allowAllConnect"/]
