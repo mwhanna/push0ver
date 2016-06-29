@@ -25,17 +25,14 @@ import com.atlassian.bamboo.utils.error.ErrorCollection;
 
 public class PreConfig extends AbstractTaskConfigurator
 {
+	private String[] toFill = { "tasklocaldir", "allowAllConnect", "defaultcheckbox", "taskusername", "mavenhome",
+			"taskpassword", "taskurl", "taskreponame"
+	};
 
 	public Map<String, String> generateTaskConfigMap( final ActionParametersMap params, final TaskDefinition previousTaskDefinition )
 	{
 		final Map<String, String> config = super.generateTaskConfigMap( params, previousTaskDefinition );
-		config.put( "tasklocaldir", params.getString( "tasklocaldir" ) );
-		config.put( "allowAllConnect", params.getString( "allowAllConnect" ) );
-		config.put( "defaultcheckbox", params.getString( "defaultcheckbox" ) );
-		config.put( "mavenhome", params.getString( "mavenhome" ) );
-		config.put( "taskusername", params.getString( "taskusername" ) );
-		config.put( "taskpassword", params.getString( "taskpassword" ) );
-		config.put( "taskurl", params.getString( "taskurl" ) );
+		fillConfig(config, params, toFill);
 		return config;
 	}
 
@@ -53,25 +50,26 @@ public class PreConfig extends AbstractTaskConfigurator
 	public void populateContextForEdit( final Map<String, Object> context, final TaskDefinition taskDefinition )
 	{
 		super.populateContextForEdit( context, taskDefinition );
-		context.put( "tasklocaldir", taskDefinition.getConfiguration().get( "tasklocaldir" ) );
-		context.put( "allowAllConnect", taskDefinition.getConfiguration().get( "allowAllConnect" ) );
-		context.put( "defaultcheckbox", taskDefinition.getConfiguration().get( "defaultcheckbox" ) );
-		context.put( "taskusername", taskDefinition.getConfiguration().get( "taskusername" ) );
-		context.put( "mavenhome", taskDefinition.getConfiguration().get( "mavenhome" ) );
-		context.put( "taskpassword", taskDefinition.getConfiguration().get( "taskpassword" ) );
-		context.put( "taskurl", taskDefinition.getConfiguration().get( "taskurl" ) );
+
+		fillContext(context, taskDefinition, toFill);
 	}
 
 	public void populateContextForView( final Map<String, Object> context, final TaskDefinition taskDefinition )
 	{
 		super.populateContextForView( context, taskDefinition );
-		context.put( "tasklocaldir", taskDefinition.getConfiguration().get( "tasklocaldir" ) );
-		context.put( "allowAllConnect", taskDefinition.getConfiguration().get( "allowAllConnect" ) );
-		context.put( "defaultcheckbox", taskDefinition.getConfiguration().get( "defaultcheckbox" ) );
-		context.put( "taskusername", taskDefinition.getConfiguration().get( "taskusername" ) );
-		context.put( "mavenhome", taskDefinition.getConfiguration().get( "mavenhome" ) );
-		context.put( "taskpassword", taskDefinition.getConfiguration().get( "taskpassword" ) );
-		context.put( "taskurl", taskDefinition.getConfiguration().get( "taskurl" ) );
+		fillContext( context, taskDefinition, toFill);
+	}
+
+	private void fillContext(Map<String, Object> context, TaskDefinition taskDefinition, String[] toFill) {
+		for (String s : toFill) {
+			context.put(s, taskDefinition.getConfiguration().get(s));
+		}
+	}
+
+	private void fillConfig(Map<String, String> config, ActionParametersMap params, String[] toFill) {
+		for (String s : toFill) {
+			config.put( s, params.getString( s ) );
+		}
 	}
 
 }

@@ -93,74 +93,12 @@ public class PostTask implements TaskType
 
 		if ( globalConfig.equals( "true" ) )
 		{
-			if ( taskUsername.trim().length() > 2 )
-			{
-				taskUsername = taskContext.getConfigurationMap().get( "taskusername" ).trim();
-			}
-			else if ( context.get( "username" ) == null )
-			{
-				taskUsername = taskContext.getConfigurationMap().get( "taskusername" ).trim();
-			}
-			else if ( context.get( "username" ).toString().length() > 2 )
-			{
-				taskUsername = context.get( "username" ).toString();
-			}
-			else
-			{
-				throw new RuntimeException( "You forgot to enter a Username." );
-			}
-
-			if ( taskPassword.trim().length() > 2 )
-			{
-				taskPassword = taskContext.getConfigurationMap().get( "taskpassword" ).trim();
-			}
-			else if ( context.get( "password" ) == null )
-			{
-				taskPassword = taskContext.getConfigurationMap().get( "taskpassword" ).trim();
-			}
-			else if ( context.get( "password" ).toString().length() > 2 )
-			{
-				taskPassword = context.get( "password" ).toString();
-			}
-			else
-			{
-				throw new RuntimeException( "You forgot to enter a Password." );
-			}
-
-			if ( taskUrl.trim().length() > 2 )
-			{
-				taskUrl = taskContext.getConfigurationMap().get( "taskurl" ).trim();
-			}
-			else if ( context.get( "url" ) == null )
-			{
-				taskUrl = taskContext.getConfigurationMap().get( "taskurl" ).trim();
-			}
-			else if ( context.get( "url" ).toString().length() > 2 )
-			{
-				taskUrl = context.get( "url" ).toString();
-			}
-			else
-			{
-				throw new RuntimeException( "You forgot to enter a URL." );
-			}
-
-			if ( taskReponame.trim().length() > 2 )
-			{
-				taskReponame = taskContext.getConfigurationMap().get( "taskreponame" ).trim();
-			}
-			else if ( context.get( "reponame" ) == null )
-			{
-				taskReponame = taskContext.getConfigurationMap().get( "taskreponame" ).trim();
-			}
-			else if ( context.get( "reponame" ).toString().length() > 2 )
-			{
-				taskReponame = context.get( "reponame" ).toString();
-			}
-			else
-			{
-				throw new RuntimeException( "You forgot to enter a Reponame." );
-			}
+			taskUsername = checkGlobalConfig( taskUsername, "username", context );
+			taskPassword = checkGlobalConfig( taskPassword, "password", context );
+			taskUrl = checkGlobalConfig( taskUrl, "url", context );
+			taskReponame = checkGlobalConfig( taskReponame, "reponame", context );
 		}
+
 		log.addBuildLogEntry( "URL:  " + taskUrl );
 		log.addBuildLogEntry( "REPO:  " + taskReponame );
 
@@ -208,5 +146,20 @@ public class PostTask implements TaskType
 		}
 
 		return taskResultBuilder.build();
+	}
+
+	private String checkGlobalConfig(String taskTerm, String otherTerm, Map<String, Object> context) {
+		if ( taskTerm.trim().length() > 2 || context.get( otherTerm ) == null)
+		{
+			return taskTerm;
+		}
+		else if ( context.get( otherTerm ).toString().length() > 2 )
+		{
+			return context.get( otherTerm ).toString();
+		}
+		else
+		{
+			throw new RuntimeException( "You forgot to enter a " + otherTerm );
+		}
 	}
 }

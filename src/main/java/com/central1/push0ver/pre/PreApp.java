@@ -44,6 +44,7 @@ public class PreApp
 	{
 		String userName = null;
 		String userPassword = null;
+		String repoName = null;
 		String pathToPom = args.length > 0 ? args[ 0 ] : null;
 		pathToPom = pathToPom != null ? pathToPom.trim() : "";
 		if ( "".equals( pathToPom ) )
@@ -52,6 +53,15 @@ public class PreApp
 		}
 		File parentPomDir = new File( pathToPom );
 		int parseValue = parentPomDir.getAbsolutePath().length();
+
+		if ( p.getProperty( "repo.name" ) != null )
+		{
+			repoName = p.getProperty( "repo.name" );
+		}
+		else
+		{
+			log.addBuildLogEntry( "You forgot to enter a Repository name! (-Drepo.name=x)" );
+		}
 
 		if ( p.getProperty( "art.username" ) != null )
 		{
@@ -103,7 +113,7 @@ public class PreApp
 			{
 				// Switch to SNAPSHOT if appropriate:
 				App.Struct struct = App.checkIfAlreadyReleased(
-						tag, log, mvnCommand, pathToPom, basicAuthHeader, url, gitTarget
+						tag, log, mvnCommand, pathToPom, basicAuthHeader, url, gitTarget, repoName
 						);
 				if ( struct != null )
 				{

@@ -28,19 +28,13 @@ public class PostConfig extends AbstractTaskConfigurator
 	private String checkBox = "false";
 	private String pushCheckBox = "true";
 	private String taskClient = "false";
+	String[] toFill = {"tasklocaldir", "taskreponame", "taskurl", "taskusername", "taskpassword", "mavenhome",
+			"checkbox", "pushcheckbox", "taskclient"};
 
 	public Map<String, String> generateTaskConfigMap( final ActionParametersMap params, final TaskDefinition previousTaskDefinition )
 	{
 		final Map<String, String> config = super.generateTaskConfigMap( params, previousTaskDefinition );
-		config.put( "taskusername", params.getString( "taskusername" ) );
-		config.put( "taskpassword", params.getString( "taskpassword" ) );
-		config.put( "taskreponame", params.getString( "taskreponame" ) );
-		config.put( "tasklocaldir", params.getString( "tasklocaldir" ) );
-		config.put( "taskurl", params.getString( "taskurl" ) );
-		config.put( "mavenhome", params.getString( "mavenhome" ) );
-		config.put( "checkbox", params.getString( "checkbox" ) );
-		config.put( "pushcheckbox", params.getString( "pushcheckbox" ) );
-		config.put( "taskclient", params.getString( "taskclient" ) );
+		fillConfig(config, params, toFill);
 		checkBox = params.getString( "checkbox" );
 		pushCheckBox = params.getString( "pushcheckbox" );
 		taskClient = params.getString( "taskclient" );
@@ -63,29 +57,25 @@ public class PostConfig extends AbstractTaskConfigurator
 	public void populateContextForEdit( final Map<String, Object> context, final TaskDefinition taskDefinition )
 	{
 		super.populateContextForEdit( context, taskDefinition );
-		context.put( "tasklocaldir", taskDefinition.getConfiguration().get( "tasklocaldir" ) );
-		context.put( "taskreponame", taskDefinition.getConfiguration().get( "taskreponame" ) );
-		context.put( "taskurl", taskDefinition.getConfiguration().get( "taskurl" ) );
-		context.put( "taskusername", taskDefinition.getConfiguration().get( "taskusername" ) );
-		context.put( "taskpassword", taskDefinition.getConfiguration().get( "taskpassword" ) );
-		context.put( "mavenhome", taskDefinition.getConfiguration().get( "mavenhome" ) );
-		context.put( "checkbox", taskDefinition.getConfiguration().get( "checkbox" ) );
-		context.put( "pushcheckbox", taskDefinition.getConfiguration().get( "pushcheckbox" ) );
-		context.put( "taskclient", taskDefinition.getConfiguration().get( "taskclient" ) );
+		fillContext(context, taskDefinition, toFill);
 	}
 
 	public void populateContextForView( final Map<String, Object> context, final TaskDefinition taskDefinition )
 	{
 		super.populateContextForView( context, taskDefinition );
-		context.put( "tasklocaldir", taskDefinition.getConfiguration().get( "tasklocaldir" ) );
-		context.put( "taskreponame", taskDefinition.getConfiguration().get( "taskreponame" ) );
-		context.put( "taskurl", taskDefinition.getConfiguration().get( "taskurl" ) );
-		context.put( "taskusername", taskDefinition.getConfiguration().get( "taskusername" ) );
-		context.put( "taskpassword", taskDefinition.getConfiguration().get( "taskpassword" ) );
-		context.put( "mavenhome", taskDefinition.getConfiguration().get( "mavenhome" ) );
-		context.put( "checkbox", taskDefinition.getConfiguration().get( "checkbox" ) );
-		context.put( "pushcheckbox", taskDefinition.getConfiguration().get( "pushcheckbox" ) );
-		context.put( "taskclient", taskDefinition.getConfiguration().get( "taskclient" ) );
+		fillContext(context, taskDefinition, toFill);
+	}
+
+	private void fillContext(Map<String, Object> context, TaskDefinition taskDefinition, String[] toFill) {
+		for (String s : toFill) {
+			context.put(s, taskDefinition.getConfiguration().get(s));
+		}
+	}
+
+	private void fillConfig(Map<String, String> config, ActionParametersMap params, String[] toFill) {
+		for (String s : toFill) {
+			config.put( s, params.getString( s ) );
+		}
 	}
 
 }

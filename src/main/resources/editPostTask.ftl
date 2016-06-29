@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Push0ver Task Configuration</title>
+    <title>Push0ver - 2. Push to Artifactory Configuration</title>
     <meta name="decorator" content="atl.admin">
   </head>
   <body>

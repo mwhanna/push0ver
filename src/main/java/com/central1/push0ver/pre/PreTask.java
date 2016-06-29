@@ -58,6 +58,7 @@ public class PreTask implements TaskType
 		context.put( "username", settings.get( PLUGIN_STORAGE_KEY + ".username" ) );
 		context.put( "password", settings.get( PLUGIN_STORAGE_KEY + ".password" ) );
 		context.put( "url", settings.get( PLUGIN_STORAGE_KEY + ".url" ) );
+		context.put( "reponame", settings.get( PLUGIN_STORAGE_KEY + ".reponame" ) );
 		context.put( "globalclient", settings.get( PLUGIN_STORAGE_KEY + ".globalclient" ) );
 
 		final String globalConfig = taskContext.getConfigurationMap().get( "defaultcheckbox" );
@@ -77,61 +78,18 @@ public class PreTask implements TaskType
 		String taskUsername = taskContext.getConfigurationMap().get( "taskusername" ).trim();
 		String taskPassword = taskContext.getConfigurationMap().get( "taskpassword" ).trim();
 		String taskUrl = taskContext.getConfigurationMap().get( "taskurl" ).trim();
+		String taskReponame = taskContext.getConfigurationMap().get( "taskreponame" ).trim();
 
 		if ( globalConfig.equals( "true" ) )
 		{
-			if ( taskUsername.trim().length() > 2 )
-			{
-				taskUsername = taskContext.getConfigurationMap().get( "taskusername" ).trim();
-			}
-			else if ( context.get( "username" ) == null )
-			{
-				taskUsername = taskContext.getConfigurationMap().get( "taskusername" ).trim();
-			}
-			else if ( context.get( "username" ).toString().length() > 2 )
-			{
-				taskUsername = context.get( "username" ).toString();
-			}
-			else
-			{
-				throw new RuntimeException( "You forgot to enter a Username." );
-			}
-
-			if ( taskPassword.trim().length() > 2 )
-			{
-				taskPassword = taskContext.getConfigurationMap().get( "taskpassword" ).trim();
-			}
-			else if ( context.get( "password" ) == null )
-			{
-				taskPassword = taskContext.getConfigurationMap().get( "taskpassword" ).trim();
-			}
-			else if ( context.get( "password" ).toString().length() > 2 )
-			{
-				taskPassword = context.get( "password" ).toString();
-			}
-			else
-			{
-				throw new RuntimeException( "You forgot to enter a Password." );
-			}
-
-			if ( taskUrl.trim().length() > 2 )
-			{
-				taskUrl = taskContext.getConfigurationMap().get( "taskurl" ).trim();
-			}
-			else if ( context.get( "url" ) == null )
-			{
-				taskUrl = taskContext.getConfigurationMap().get( "taskurl" ).trim();
-			}
-			else if ( context.get( "url" ).toString().length() > 2 )
-			{
-				taskUrl = context.get( "url" ).toString();
-			}
-			else
-			{
-				throw new RuntimeException( "You forgot to enter a URL." );
-			}
+			taskUsername = checkGlobalConfig( taskUsername, "username", context );
+			taskPassword = checkGlobalConfig( taskPassword, "password", context );
+			taskUrl = checkGlobalConfig( taskUrl, "url", context );
+			taskReponame = checkGlobalConfig( taskReponame, "reponame", context );
 		}
+
 		log.addBuildLogEntry( "URL:  " + taskUrl );
+		log.addBuildLogEntry( "REPO:  " + taskReponame );
 
 		if ( taskUsername.equals( "Empty" ) || taskPassword.equals( "Empty" ) )
 		{
@@ -160,6 +118,7 @@ public class PreTask implements TaskType
 			String[] arg = new String[]{localdir};
 			p.setProperty( "art.username", taskUsername );
 			p.setProperty( "art.password", taskPassword );
+			p.setProperty( "repo.name", taskReponame );
 			p.setProperty( "art.url", taskUrl );
 			p.setProperty( "mvn.home", mavenHome );
 			p.setProperty( "ssl.trustAll", Boolean.toString( sslTrustAll ) );
@@ -172,6 +131,21 @@ public class PreTask implements TaskType
 		}
 
 		return taskResultBuilder.build();
+	}
+
+	private String checkGlobalConfig(String taskTerm, String otherTerm, Map<String, Object> context) {
+		if ( taskTerm.trim().length() > 2 || context.get( otherTerm ) == null)
+		{
+			return taskTerm;
+		}
+		else if ( context.get( otherTerm ).toString().length() > 2 )
+		{
+			return context.get( otherTerm ).toString();
+		}
+		else
+		{
+			throw new RuntimeException( "You forgot to enter a " + otherTerm );
+		}
 	}
 
 }

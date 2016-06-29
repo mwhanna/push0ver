@@ -16,14 +16,7 @@ limitations under the License.
 
 package com.central1.push0ver;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
@@ -281,6 +274,11 @@ public class Rename
 							response = httpClient.execute( puts[ t ] );
 							StatusLine statusLine = response.getStatusLine();
 							statusCode = statusLine.getStatusCode();
+							String tempCode = Integer.toString(statusCode).substring(0,1);
+
+							if (Integer.parseInt(tempCode) == 4 || Integer.parseInt(tempCode) == 5) {
+								buildLogger.addBuildLogEntry("ERROR! DID NOT UPLOAD:  ----     " + response.getStatusLine());
+							}
 						}
 						catch ( IOException a )
 						{
@@ -387,7 +385,7 @@ public class Rename
 
 	private String existsTarget( String fileName )
 	{
-		return url + "repo/" +
+		return url + repoName + "/" +
 				groupName.replace( '.', '/' ) + "/" + moduleName + "/" + tag + "/" + fileName;
 	}
 

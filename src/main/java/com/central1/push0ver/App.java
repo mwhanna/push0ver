@@ -172,7 +172,7 @@ public class App
 		final String basicAuthHeader = basicAuthHeader( userName, userPassword );
 
 		Struct struct = checkIfAlreadyReleased(
-				tag, log, mvnCommand, pathToPom, basicAuthHeader, url, gitTarget
+				tag, log, mvnCommand, pathToPom, basicAuthHeader, url, gitTarget, repoName
 				);
 		if ( struct == null )
 		{
@@ -241,14 +241,14 @@ public class App
 
 	public static Struct checkIfAlreadyReleased(
 			String tag, MyLogger log, String mvnCommand, String pathToPom, String basicAuthHeader, String artUrl,
-			String gitTarget
+			String gitTarget, String repoName
 			) throws IOException
 	{
 		Struct s = new Struct();
 		parseMavenPoms( log, mvnCommand, pathToPom, s.groupNames, s.moduleNames );
 
 		String group = s.groupNames.get( 0 ).replace( '.', '/' );
-		String checkTarget = artUrl + "repo/" + group + "/" + s.moduleNames.get( 0 ) + "/" + tag;
+		String checkTarget = artUrl + repoName + "/" + group + "/" + s.moduleNames.get( 0 ) + "/" + tag;
 		if ( !tag.contains( "-SNAPSHOT" ) )
 		{
 			final String releaseTag = tag;
