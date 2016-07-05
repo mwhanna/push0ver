@@ -20,8 +20,12 @@
         <input type="text" id="url" name="url" value=$url class="text">
       </div>
       <div class="field-group">
-        <label for="reponame">Artifactory RepoName</label>
-        <input type="text" id="reponame" name="reponame" value=$reponame class="text">
+        <label for="releaserepo">Artifactory RepoName - RELEASE</label>
+        <input type="text" id="releaserepo" name="releaserepo" value=$releaserepo class="text">
+      </div>
+      <div class="field-group">
+        <label for="snaprepo">Artifactory RepoName - SNAPSHOT</label>
+        <input type="text" id="snaprepo" name="snaprepo" value=$snaprepo class="text">
       </div>
       <div class="field-group">
         <input type="checkbox" name="globalclient" value=$globalclient> Allow Unsecured Connections<br>

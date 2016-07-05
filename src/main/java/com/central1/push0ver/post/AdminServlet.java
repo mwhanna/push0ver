@@ -98,11 +98,18 @@ public class AdminServlet extends HttpServlet
 			pluginSettings.put( PLUGIN_STORAGE_KEY + ".url", noUrl );
 		}
 
-		if ( pluginSettings.get( PLUGIN_STORAGE_KEY + ".reponame" ) == null ||
-				pluginSettings.get( PLUGIN_STORAGE_KEY + ".reponame" ).equals( "" ) )
+		if ( pluginSettings.get( PLUGIN_STORAGE_KEY + ".releaserepo" ) == null ||
+				pluginSettings.get( PLUGIN_STORAGE_KEY + ".releaserepo" ).equals( "" ) )
 		{
 			String noReponame = "Empty";
-			pluginSettings.put( PLUGIN_STORAGE_KEY + ".reponame", noReponame );
+			pluginSettings.put( PLUGIN_STORAGE_KEY + ".releaserepo", noReponame );
+		}
+
+		if ( pluginSettings.get( PLUGIN_STORAGE_KEY + ".snaprepo" ) == null ||
+				pluginSettings.get( PLUGIN_STORAGE_KEY + ".snaprepo" ).equals( "" ) )
+		{
+			String noSnapname = "Empty";
+			pluginSettings.put( PLUGIN_STORAGE_KEY + ".snaprepo", noSnapname );
 		}
 
 		if ( pluginSettings.get( PLUGIN_STORAGE_KEY + ".globalclient" ) == null )
@@ -113,7 +120,8 @@ public class AdminServlet extends HttpServlet
 		context.put( "username", pluginSettings.get( PLUGIN_STORAGE_KEY + ".username" ) );
 		context.put( "password", pluginSettings.get( PLUGIN_STORAGE_KEY + ".password" ) );
 		context.put( "url", pluginSettings.get( PLUGIN_STORAGE_KEY + ".url" ) );
-		context.put( "reponame", pluginSettings.get( PLUGIN_STORAGE_KEY + ".reponame" ) );
+		context.put( "releaserepo", pluginSettings.get( PLUGIN_STORAGE_KEY + ".releaserepo" ) );
+		context.put( "snaprepo", pluginSettings.get( PLUGIN_STORAGE_KEY + ".snaprepo" ) );
 		context.put( "globalclient", pluginSettings.get( PLUGIN_STORAGE_KEY + ".globalclient" ) );
 
 		response.setContentType( "text/html;charset=utf-8" );
@@ -128,7 +136,8 @@ public class AdminServlet extends HttpServlet
 		pluginSettings.put( PLUGIN_STORAGE_KEY + ".username", req.getParameter( "username" ) );
 		pluginSettings.put( PLUGIN_STORAGE_KEY + ".password", req.getParameter( "password" ) );
 		pluginSettings.put( PLUGIN_STORAGE_KEY + ".url", req.getParameter( "url" ) );
-		pluginSettings.put( PLUGIN_STORAGE_KEY + ".reponame", req.getParameter( "reponame" ) );
+		pluginSettings.put( PLUGIN_STORAGE_KEY + ".releaserepo", req.getParameter( "releaserepo" ) );
+		pluginSettings.put( PLUGIN_STORAGE_KEY + ".snaprepo", req.getParameter( "snaprepo" ) );
 		pluginSettings.put( PLUGIN_STORAGE_KEY + ".globalclient", req.getParameter( "globalclient" ) );
 		response.sendRedirect( "admin" );
 	}

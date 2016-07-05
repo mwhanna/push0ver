@@ -16,6 +16,8 @@ limitations under the License.
 
 package com.central1.push0ver.pre;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -32,6 +34,7 @@ import com.atlassian.bamboo.task.TaskType;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import com.central1.push0ver.MyLogger;
 
 @Named( "PreTask" )
 public class PreTask implements TaskType
@@ -58,7 +61,7 @@ public class PreTask implements TaskType
 		context.put( "username", settings.get( PLUGIN_STORAGE_KEY + ".username" ) );
 		context.put( "password", settings.get( PLUGIN_STORAGE_KEY + ".password" ) );
 		context.put( "url", settings.get( PLUGIN_STORAGE_KEY + ".url" ) );
-		context.put( "reponame", settings.get( PLUGIN_STORAGE_KEY + ".reponame" ) );
+		context.put( "releaserepo", settings.get( PLUGIN_STORAGE_KEY + ".releaserepo" ) );
 		context.put( "globalclient", settings.get( PLUGIN_STORAGE_KEY + ".globalclient" ) );
 
 		final String globalConfig = taskContext.getConfigurationMap().get( "defaultcheckbox" );
@@ -72,24 +75,24 @@ public class PreTask implements TaskType
 			}
 		}
 		final boolean sslTrustAll = "true".equalsIgnoreCase( taskClient.trim() );
-		String localdir = taskContext.getConfigurationMap().get( "tasklocaldir" ).trim();
-		String mavenHome = taskContext.getConfigurationMap().get( "mavenhome" ).trim();
+		String localdir = nullTrim(taskContext.getConfigurationMap().get("tasklocaldir"));
+		String mavenHome = nullTrim(taskContext.getConfigurationMap().get("mavenhome"));
 
-		String taskUsername = taskContext.getConfigurationMap().get( "taskusername" ).trim();
-		String taskPassword = taskContext.getConfigurationMap().get( "taskpassword" ).trim();
-		String taskUrl = taskContext.getConfigurationMap().get( "taskurl" ).trim();
-		String taskReponame = taskContext.getConfigurationMap().get( "taskreponame" ).trim();
+		String taskUsername = nullTrim(taskContext.getConfigurationMap().get("taskusername"));
+		String taskPassword = nullTrim(taskContext.getConfigurationMap().get("taskpassword"));
+		String taskUrl = nullTrim(taskContext.getConfigurationMap().get("taskurl"));
+		String taskReleaseRepo = nullTrim(taskContext.getConfigurationMap().get("taskreleaserepo"));
 
 		if ( globalConfig.equals( "true" ) )
 		{
 			taskUsername = checkGlobalConfig( taskUsername, "username", context );
 			taskPassword = checkGlobalConfig( taskPassword, "password", context );
 			taskUrl = checkGlobalConfig( taskUrl, "url", context );
-			taskReponame = checkGlobalConfig( taskReponame, "reponame", context );
+			taskReleaseRepo = checkGlobalConfig( taskReleaseRepo, "releaserepo", context );
 		}
 
 		log.addBuildLogEntry( "URL:  " + taskUrl );
-		log.addBuildLogEntry( "REPO:  " + taskReponame );
+		log.addBuildLogEntry( "RELEASE REPO:  " + taskReleaseRepo );
 
 		if ( taskUsername.equals( "Empty" ) || taskPassword.equals( "Empty" ) )
 		{
@@ -118,7 +121,7 @@ public class PreTask implements TaskType
 			String[] arg = new String[]{localdir};
 			p.setProperty( "art.username", taskUsername );
 			p.setProperty( "art.password", taskPassword );
-			p.setProperty( "repo.name", taskReponame );
+			p.setProperty( "repo.name", taskReleaseRepo );
 			p.setProperty( "art.url", taskUrl );
 			p.setProperty( "mvn.home", mavenHome );
 			p.setProperty( "ssl.trustAll", Boolean.toString( sslTrustAll ) );
@@ -126,7 +129,7 @@ public class PreTask implements TaskType
 		}
 		catch ( Exception e )
 		{
-			e.printStackTrace();
+			logStackTrace(log, e);
 			taskResultBuilder.failed();
 		}
 
@@ -134,7 +137,7 @@ public class PreTask implements TaskType
 	}
 
 	private String checkGlobalConfig(String taskTerm, String otherTerm, Map<String, Object> context) {
-		if ( taskTerm.trim().length() > 2 || context.get( otherTerm ) == null)
+		if ( nullTrim(taskTerm).length() > 2 || context.get( otherTerm ) == null)
 		{
 			return taskTerm;
 		}
@@ -146,6 +149,20 @@ public class PreTask implements TaskType
 		{
 			throw new RuntimeException( "You forgot to enter a " + otherTerm );
 		}
+	}
+
+	private static String nullTrim(String s) {
+		return s != null ? s.trim() : "";
+	}
+
+	public static void logStackTrace( BuildLogger log, Throwable t )
+	{
+		StringWriter sw = new StringWriter( 4096 );
+		PrintWriter pw = new PrintWriter( sw );
+		t.printStackTrace( pw );
+		pw.flush();
+		pw.close();
+		log.addBuildLogEntry( sw.toString() );
 	}
 
 }

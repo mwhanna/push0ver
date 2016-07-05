@@ -28,7 +28,7 @@ public class PostConfig extends AbstractTaskConfigurator
 	private String checkBox = "false";
 	private String pushCheckBox = "true";
 	private String taskClient = "false";
-	String[] toFill = {"tasklocaldir", "taskreponame", "taskurl", "taskusername", "taskpassword", "mavenhome",
+	String[] toFill = {"tasklocaldir", "taskreleaserepo", "tasksnaprepo", "taskurl", "taskusername", "taskpassword", "mavenhome",
 			"checkbox", "pushcheckbox", "taskclient"};
 
 	public Map<String, String> generateTaskConfigMap( final ActionParametersMap params, final TaskDefinition previousTaskDefinition )

@@ -93,6 +93,7 @@ public class App
 		final boolean sslTrustAll = "true".equalsIgnoreCase( p.getProperty( "ssl.trustAll" ) );
 		final boolean doPush = args.length > 1 && "push".equalsIgnoreCase( args[ 1 ] );
 		String repoName = null;
+		String snapRepo = null;
 		String url = null;
 		String userHome = System.getProperty( "user.home" );
 		if ( p.getProperty( "repo.name" ) != null )
@@ -103,6 +104,11 @@ public class App
 		{
 			log.addBuildLogEntry( "You forgot to enter a Repository name! (-Drepo.name=x)" );
 			doSomething = false;
+		}
+
+		if ( p.getProperty( "snap.repo" ) != null )
+		{
+			snapRepo = p.getProperty( "snap.repo" );
 		}
 
 		if ( p.getProperty( "art.url" ) != null )
@@ -170,6 +176,17 @@ public class App
 
 		log.addBuildLogEntry( "TAG:       " + tag );
 		final String basicAuthHeader = basicAuthHeader( userName, userPassword );
+
+		if ( tag.contains( "SNAPSHOT" ) )
+		{
+			if ( snapRepo == null || "".equals( snapRepo ) ) {
+				log.addBuildLogEntry( "No Global or Local Repo set for SNAPSHOT, using RELEASE Repo." );
+			}
+			else
+			{
+				repoName = snapRepo;
+			}
+		}
 
 		Struct struct = checkIfAlreadyReleased(
 				tag, log, mvnCommand, pathToPom, basicAuthHeader, url, gitTarget, repoName

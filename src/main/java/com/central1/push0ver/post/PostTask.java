@@ -62,7 +62,8 @@ public class PostTask implements TaskType
 		context.put( "username", settings.get( PLUGIN_STORAGE_KEY + ".username" ) );
 		context.put( "password", settings.get( PLUGIN_STORAGE_KEY + ".password" ) );
 		context.put( "url", settings.get( PLUGIN_STORAGE_KEY + ".url" ) );
-		context.put( "reponame", settings.get( PLUGIN_STORAGE_KEY + ".reponame" ) );
+		context.put( "releaserepo", settings.get( PLUGIN_STORAGE_KEY + ".releaserepo" ) );
+		context.put( "snaprepo", settings.get( PLUGIN_STORAGE_KEY + ".snaprepo" ) );
 		context.put( "globalclient", settings.get( PLUGIN_STORAGE_KEY + ".globalclient" ) );
 
 		final String globalConfig = taskContext.getConfigurationMap().get( "checkbox" );
@@ -77,13 +78,14 @@ public class PostTask implements TaskType
 			}
 		}
 		final boolean sslTrustAll = "true".equalsIgnoreCase( taskClient.trim() );
-		String localdir = taskContext.getConfigurationMap().get( "tasklocaldir" ).trim();
-		String mavenHome = taskContext.getConfigurationMap().get( "mavenhome" ).trim();
+		String localdir = nullTrim(taskContext.getConfigurationMap().get("tasklocaldir"));
+		String mavenHome = nullTrim(taskContext.getConfigurationMap().get("mavenhome"));
 
-		String taskUsername = taskContext.getConfigurationMap().get( "taskusername" ).trim();
-		String taskPassword = taskContext.getConfigurationMap().get( "taskpassword" ).trim();
-		String taskUrl = taskContext.getConfigurationMap().get( "taskurl" ).trim();
-		String taskReponame = taskContext.getConfigurationMap().get( "taskreponame" ).trim();
+		String taskUsername = nullTrim(taskContext.getConfigurationMap().get("taskusername"));
+		String taskPassword = nullTrim(taskContext.getConfigurationMap().get("taskpassword"));
+		String taskUrl = nullTrim(taskContext.getConfigurationMap().get("taskurl"));
+		String taskReleaseRepo = nullTrim(taskContext.getConfigurationMap().get("taskreleaserepo"));
+		String taskSnapRepo = nullTrim(taskContext.getConfigurationMap().get("tasksnaprepo"));
 
 		String push = "";
 		if ( pushCheckBox.equals( "true" ) )
@@ -96,11 +98,12 @@ public class PostTask implements TaskType
 			taskUsername = checkGlobalConfig( taskUsername, "username", context );
 			taskPassword = checkGlobalConfig( taskPassword, "password", context );
 			taskUrl = checkGlobalConfig( taskUrl, "url", context );
-			taskReponame = checkGlobalConfig( taskReponame, "reponame", context );
+			taskReleaseRepo = checkGlobalConfig( taskReleaseRepo, "releaserepo", context );
+			taskSnapRepo = checkGlobalConfig( taskSnapRepo, "snaprepo", context );
 		}
 
 		log.addBuildLogEntry( "URL:  " + taskUrl );
-		log.addBuildLogEntry( "REPO:  " + taskReponame );
+		log.addBuildLogEntry( "RELEASE REPO:  " + taskReleaseRepo );
 
 		if ( taskUsername.equals( "Empty" ) || taskPassword.equals( "Empty" ) )
 		{
@@ -127,7 +130,8 @@ public class PostTask implements TaskType
 		try
 		{
 			String[] arg = new String[]{localdir, push};
-			p.setProperty( "repo.name", taskReponame );
+			p.setProperty( "repo.name", taskReleaseRepo );
+			p.setProperty( "snap.repo", taskSnapRepo );
 			p.setProperty( "art.username", taskUsername );
 			p.setProperty( "art.password", taskPassword );
 			p.setProperty( "art.url", taskUrl );
@@ -161,5 +165,9 @@ public class PostTask implements TaskType
 		{
 			throw new RuntimeException( "You forgot to enter a " + otherTerm );
 		}
+	}
+
+	private static String nullTrim(String s) {
+		return s != null ? s.trim() : "";
 	}
 }

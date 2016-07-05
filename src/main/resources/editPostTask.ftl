@@ -13,6 +13,7 @@
   [@ww.textfield labelKey="push0ver.task.username" name="taskusername" required='false'/]
   [@ww.textfield labelKey="push0ver.task.password" name="taskpassword" required='false'/]
   [@ww.textfield labelKey="push0ver.task.url" name="taskurl" required='false'/]
-  [@ww.textfield labelKey="push0ver.task.reponame" name="taskreponame" required='false'/]
+  [@ww.textfield labelKey="push0ver.task.releaserepo" name="taskreleaserepo" required='false'/]
+  [@ww.textfield labelKey="push0ver.task.snaprepo" name="tasksnaprepo" required='false'/]
   </body>
 </html>

@@ -278,6 +278,15 @@ public class Rename
 
 							if (Integer.parseInt(tempCode) == 4 || Integer.parseInt(tempCode) == 5) {
 								buildLogger.addBuildLogEntry("ERROR! DID NOT UPLOAD:  ----     " + response.getStatusLine());
+
+								if ( statusCode == 502 )
+								{
+									throw new RuntimeException( "Possibly " + repoName + " is not configured to receive Snapshots." );
+								}
+								else
+								{
+									throw new RuntimeException( "FAILED to push to Artifactory - See Logs." );
+								}
 							}
 						}
 						catch ( IOException a )
@@ -379,7 +388,7 @@ public class Rename
 	private String uploadTarget( String fileName, String tag, long timestamp )
 	{
 		String group = groupName.replace( '.', '/' );
-		String target = url + "simple/" + repoName + "/" + group + "/" + moduleName + "/" + tag + "/" + fileName;
+		String target = url + repoName + "/" + group + "/" + moduleName + "/" + tag + "/" + fileName;
 		return target + "?build.timestamp=" + timestamp;
 	}
 
