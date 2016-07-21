@@ -16,43 +16,38 @@ limitations under the License.
 
 package com.central1.push0ver;
 
+import javax.annotation.Nullable;
+
+/**
+ * A "Version" object that implements Comparable in a way that tends to match what humans expect
+ * (e.g., "1.2" &lt; "1.2.3alpha99" &lt; "1.2.3beta3" &lt; "1.2.3rc1" &lt; "1.2.3" &lt; "1.2.11" ).
+ * 
+ * Developed with an empirical sample of ~20,000 distinct version numbers extracted from Maven-Central and Debian.
+ *
+ */
 public class Version implements Comparable<Version>
 {
-	final static boolean[] IS_DIGIT = new boolean[ '9' + 1 ];
-	static
-	{
-		IS_DIGIT[ '0' ] = true;
-		IS_DIGIT[ '1' ] = true;
-		IS_DIGIT[ '2' ] = true;
-		IS_DIGIT[ '3' ] = true;
-		IS_DIGIT[ '4' ] = true;
-		IS_DIGIT[ '5' ] = true;
-		IS_DIGIT[ '6' ] = true;
-		IS_DIGIT[ '7' ] = true;
-		IS_DIGIT[ '8' ] = true;
-		IS_DIGIT[ '9' ] = true;
-	}
-
-	public final String[] version;
+	private final String version;
+	private final String[] split;
 
 	public Version( String version )
 	{
-		if ( version == null )
-		{
-			throw new NullPointerException( "Cannot construct Version with null" );
-		}
-		this.version = version.trim().split( "\\." );
+		this.version = version != null ? version.trim() : "";
+		String[] v1 = version.trim().split( "\\." );
+		String[] v2 = new String[ v1.length + 1 ];
+		System.arraycopy( v1, 0, v2, 0, v1.length );
+		v2[ v2.length - 1 ] = ""; // very important: append empty-string to version split.
+		this.split = v2;
 	}
 
 	public String toString()
 	{
-		// reassemble
-		String s = "";
-		for ( String v : version )
-		{
-			s += v + ".";
-		}
-		return s.substring( 0, s.length() - 1 ); // omit final "."
+		return version;
+	}
+
+	String[] getSplit()
+	{
+		return split;
 	}
 
 	@Override
@@ -67,111 +62,8 @@ public class Version implements Comparable<Version>
 		return toString().hashCode();
 	}
 
-	private static int onePastLastDigit( String s )
+	public int compareTo( @Nullable Version v )
 	{
-		int x = -1;
-		if ( s != null )
-		{
-			x = s.length();
-		}
-		if ( s != null && !"".equals( s ) && !"-".equals( s ) )
-		{
-			if ( s.startsWith( "-" ) )
-			{
-				s = s.substring( 1 );
-			}
-			for ( int i = 0; i < s.length(); i++ )
-			{
-				char c = s.charAt( i );
-				boolean isDigit = c < IS_DIGIT.length && IS_DIGIT[ c ];
-				if ( !isDigit )
-				{
-					return i;
-				}
-			}
-		}
-		return x;
-	}
-
-	public int compareTo( Version otherVersion )
-	{
-		String[] other = otherVersion.version;
-		int c;
-		for ( int i = 0; i < Math.min( version.length, other.length ); i++ )
-		{
-			String s1 = version[ i ];
-			String s2 = other[ i ];
-			Long v1 = toLong( s1 );
-			Long v2 = toLong( s2 );
-			if ( v1 != null && v2 != null )
-			{
-				c = v1.compareTo( v2 );
-			}
-			else
-			{
-				// null == null, and null is smaller than non-null
-				c = v1 == v2 ? 0 : v1 == null ? -1 : 1;
-			}
-
-			// fall-back to alpha-numeric comparison (with stripped leading zeroes):
-			if ( c == 0 )
-			{
-				c = stripLeadingZeroes( s1 ).compareTo( stripLeadingZeroes( s2 ) );
-			}
-			if ( c != 0 )
-			{
-				return c;
-			}
-		}
-
-		Integer myLen = version.length;
-		Integer otherLen = other.length;
-		c = myLen.compareTo( otherLen );
-		if ( c == 0 )
-		{
-			myLen = toString().length();
-			otherLen = otherVersion.toString().length();
-			c = myLen.compareTo( otherLen );
-		}
-		return c;
-	}
-
-	private static String stripLeadingZeroes( String s )
-	{
-		if ( s == null )
-		{
-			return null;
-		}
-		int x = 0;
-		while ( x < s.length() && s.charAt( x ) == '0' )
-		{
-			x++;
-		}
-		return s.substring( x );
-	}
-
-	/**
-	 * Converts provided String to a Long by grabbing any
-	 * leading digits in the string (stopping at first non-digit)
-	 * and converting that to a Long.
-	 *
-	 * NOTE:  This is not a normal "String-2-Long" method since "123abc" would
-	 * return Long.valueOf(123).
-	 *
-	 * @param s string to convert to long
-	 * @return leading digits of the string converted to long
-	 */
-	private static Long toLong( String s )
-	{
-		try
-		{
-			int x = onePastLastDigit( s );
-			return x > 0 ? Long.parseLong( s.substring( 0, x ) ) : null;
-		}
-		catch ( NumberFormatException nfe )
-		{
-			// Number larger than Long.MAX_VALUE ?
-			return null;
-		}
+		return VersionComparators.COMPARE_VERSIONS.compare( this, v );
 	}
 }

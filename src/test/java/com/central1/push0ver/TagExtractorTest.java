@@ -86,7 +86,7 @@ public class TagExtractorTest
 	{
 		// Case 1a.) Largest non-snapshot tag in HEAD is "1.1.1.2a":
 		StringReader r = new StringReader( CASE_1A );
-		Assert.assertEquals( "1.1.1.2a", TagExtractor.extractTagTestLogic( r ) );
+		Assert.assertEquals( "1.1.1.2", TagExtractor.extractTagTestLogic( r ) );
 
 		// Case 1b.) Largest tag in HEAD is "99.99-SNAPSHOT".  All tags in HEAD contain "-SNAPSHOT".
 		// (Except for tag "zzz" which is ignored because it's invalid).
