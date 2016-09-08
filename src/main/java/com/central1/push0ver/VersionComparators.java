@@ -296,16 +296,18 @@ public class VersionComparators
 				return -5;
 			case "snapshot":
 				return -10;
+			case "push0ver":
+				return -11;
 			case "cvs":
-				return -11;
+				return -21;
 			case "svn":
-				return -11;
+				return -21;
 			case "bzr":
-				return -11;
+				return -21;
 			case "hg":
-				return -11;
+				return -21;
 			case "git":
-				return -11;
+				return -21;
 			case "rev":
 				return -100;
 			case "r":
