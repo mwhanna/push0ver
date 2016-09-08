@@ -179,7 +179,6 @@ public class VersionComparators
 		IS_DIGIT[ '7' ] = true;
 		IS_DIGIT[ '8' ] = true;
 		IS_DIGIT[ '9' ] = true;
-
 		IS_SPECIAL[ '`' ] = true;
 		IS_SPECIAL[ '^' ] = true;
 		IS_SPECIAL[ '~' ] = true;
@@ -239,7 +238,7 @@ public class VersionComparators
 
 		char c = s.charAt( 0 );
 		boolean isDigit = isDigit( c );
-		boolean isSpecial = c < IS_SPECIAL.length && IS_SPECIAL[ c ];
+		boolean isSpecial = isSpecial( c );
 		boolean isAlpha = !isDigit && !isSpecial;
 		int prevMode = isAlpha ? 0 : isDigit ? 1 : -1;
 
@@ -247,7 +246,7 @@ public class VersionComparators
 		{
 			c = s.charAt( i );
 			isDigit = isDigit( c );
-			isSpecial = c < IS_SPECIAL.length && IS_SPECIAL[ c ];
+			isSpecial = isSpecial( c );
 			isAlpha = !isDigit && !isSpecial;
 			int mode = isAlpha ? 0 : isDigit ? 1 : -1;
 			if ( mode != prevMode )
@@ -335,6 +334,11 @@ public class VersionComparators
 		return c < IS_DIGIT.length && IS_DIGIT[ c ];
 	}
 
+	private static boolean isSpecial( char c )
+	{
+		return c < IS_SPECIAL.length && IS_SPECIAL[ c ];
+	}
+
 	private static boolean startsWithDigit( String s )
 	{
 		switch ( s.length() )
@@ -361,7 +365,7 @@ public class VersionComparators
 		}
 		catch ( NumberFormatException nfe )
 		{
-			return null;// contained alpha, or Number larger than Long.MAX_VALUE ?
+			return null; // contained alpha, or Number larger than Long.MAX_VALUE ?
 		}
 	}
 }
