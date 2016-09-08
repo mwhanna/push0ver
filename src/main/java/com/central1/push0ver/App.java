@@ -80,7 +80,7 @@ public class App
 				boolean deleteSucceeded = pretest.delete();
 				if ( !deleteSucceeded )
 				{
-					log.addBuildLogEntry( "WARNING: push0ver failed to delete [" + pretest.getAbsolutePath() + "]" );
+					log.addBuildLogEntry( "push0ver - WARNING: failed to delete [" + pretest.getAbsolutePath() + "]" );
 				}
 			}
 			windupStatus = buf.toString().trim();
@@ -102,7 +102,7 @@ public class App
 		}
 		else
 		{
-			log.addBuildLogEntry( "You forgot to enter a Repository name! (-Drepo.name=x)" );
+			log.addBuildLogEntry( "push0ver - You forgot to enter a Repository name! (-Drepo.name=x)" );
 			doSomething = false;
 		}
 
@@ -121,7 +121,7 @@ public class App
 		}
 		else
 		{
-			log.addBuildLogEntry( "You forgot to enter an Artifactory URL! (-Dart.url=x)" );
+			log.addBuildLogEntry( "push0ver - You forgot to enter a Repository URL! (-Dart.url=x)" );
 			doSomething = false;
 		}
 
@@ -131,7 +131,7 @@ public class App
 		}
 		else
 		{
-			log.addBuildLogEntry( "You forgot to enter an Artifactory Username! (-Dart.username=x)" );
+			log.addBuildLogEntry( "push0ver - You forgot to enter an Artifactory Username! (-Dart.username=x)" );
 			doSomething = false;
 		}
 
@@ -141,7 +141,7 @@ public class App
 		}
 		else
 		{
-			log.addBuildLogEntry( "You forgot to enter an Artifactory Password! (-Dart.password=x)" );
+			log.addBuildLogEntry( "push0ver - You forgot to enter an Artifactory Password! (-Dart.password=x)" );
 			doSomething = false;
 		}
 
@@ -171,16 +171,18 @@ public class App
 		String tag = TagExtractor.getTag( gitTarget, false, log, null );
 		if ( tag == null )
 		{
+			log.addBuildLogEntry( "push0ver - ABORT: unable to extract valid tag." );
 			return;
 		}
 
-		log.addBuildLogEntry( "TAG:       " + tag );
+		log.addBuildLogEntry( "push0ver - EXTRACTED TAG:       " + tag );
 		final String basicAuthHeader = basicAuthHeader( userName, userPassword );
 
 		if ( tag.contains( "SNAPSHOT" ) )
 		{
-			if ( snapRepo == null || "".equals( snapRepo ) ) {
-				log.addBuildLogEntry( "No Global or Local Repo set for SNAPSHOT, using RELEASE Repo." );
+			if ( snapRepo == null || "".equals( snapRepo ) )
+			{
+				log.addBuildLogEntry( "push0ver - No Global or Local Repo set for SNAPSHOT, using RELEASE Repo." );
 			}
 			else
 			{
@@ -189,8 +191,7 @@ public class App
 		}
 
 		Struct struct = checkIfAlreadyReleased(
-				tag, log, mvnCommand, pathToPom, basicAuthHeader, url, gitTarget, repoName
-				);
+				tag, log, mvnCommand, pathToPom, basicAuthHeader, url, gitTarget, repoName );
 		if ( struct == null )
 		{
 			return;
@@ -203,14 +204,14 @@ public class App
 		{
 			if ( !"pre=valid".equals( windupStatus ) )
 			{
-				log.addBuildLogEntry( "Push0ver - Windup was run! ABORTING: no valid tag found: [" + windupStatus + "]" );
+				log.addBuildLogEntry( "push0ver - Windup was run! ABORTING: no valid tag found: [" + windupStatus + "]" );
 				return;
 			}
-			log.addBuildLogEntry( "Push0ver - Windup was run!" );
+			log.addBuildLogEntry( "push0ver - Windup was run!" );
 			search = tag;
 		}
 
-		log.addBuildLogEntry( "Will Execute:  " + String.valueOf( doSomething ) );
+		log.addBuildLogEntry( "push0ver - Will Execute:  " + String.valueOf( doSomething ) );
 
 		for ( int z = 0; z < struct.moduleNames.size(); z++ )
 		{
@@ -240,7 +241,7 @@ public class App
 						}
 						else
 						{
-							log.addBuildLogEntry( "Your project dir [" + pathToPom
+							log.addBuildLogEntry( "push0ver - Your project dir [" + pathToPom
 									+ "] contains whitespace, so you'll have to clean it yourself." );
 						}
 					}
@@ -258,8 +259,7 @@ public class App
 
 	public static Struct checkIfAlreadyReleased(
 			String tag, MyLogger log, String mvnCommand, String pathToPom, String basicAuthHeader, String artUrl,
-			String gitTarget, String repoName
-			) throws IOException
+			String gitTarget, String repoName ) throws IOException
 	{
 		Struct s = new Struct();
 		parseMavenPoms( log, mvnCommand, pathToPom, s.groupNames, s.moduleNames );
@@ -274,10 +274,10 @@ public class App
 				tag = TagExtractor.getTag( gitTarget, true, log, null );
 				if ( tag == null || releaseTag.equals( tag ) )
 				{
-					log.addBuildLogEntry( "RELEASE " + releaseTag + " ALREADY PUBLISHED TO ARTIFACTORY! (" + checkTarget + ")" );
+					log.addBuildLogEntry( "push0ver - RELEASE " + releaseTag + " ALREADY PUBLISHED TO ARTIFACTORY! (" + checkTarget + ")" );
 					return null;
 				}
-				log.addBuildLogEntry( "RELEASE " + releaseTag + " ALREADY PUBLISHED TO ARTIFACTORY! SWITCHING TAG TO: " + tag );
+				log.addBuildLogEntry( "push0ver - RELEASE " + releaseTag + " ALREADY PUBLISHED TO ARTIFACTORY! SWITCHING TAG TO: " + tag );
 			}
 		}
 		s.tag = tag;
@@ -288,23 +288,21 @@ public class App
 	{
 		String cmd = "git --no-pager --git-dir=" + projectDir + "/.git fetch --tags";
 		String[] command = cmd.split( " " );
-		log.addBuildLogEntry( "Fetch Tags from:  " + projectDir );
 		Process process = Runtime.getRuntime().exec( command );
 		BufferedReader br = new BufferedReader( new InputStreamReader( process.getInputStream() ) );
 		String k;
 		while ( ( k = br.readLine() ) != null )
 		{
-			log.addBuildLogEntry( "Fetch Tags:   " + k );
+			log.addBuildLogEntry( "push0ver - Fetch Tags:   " + k );
 		}
 		process.waitFor( 2, TimeUnit.SECONDS );
 	}
 
 	private static void parseMavenPoms(
-			MyLogger log, String mvn, String pom, List<String> groupNames, List<String> moduleNames
-			) throws IOException
+			MyLogger log, String mvn, String pom, List<String> groupNames, List<String> moduleNames ) throws IOException
 	{
 		String[] command = new String[]{mvn, "dependency:tree"};
-		log.addBuildLogEntry( "RUNNING:   " + command[ 0 ] + " " + command[ 1 ] + " IN " + pom );
+		log.addBuildLogEntry( "push0ver - RUNNING:   " + command[ 0 ] + " " + command[ 1 ] + " IN " + pom );
 		Process process = Runtime.getRuntime().exec( command, null, new File( pom ) );
 		BufferedReader br = new BufferedReader( new InputStreamReader( process.getInputStream() ) );
 		String line;
@@ -354,7 +352,7 @@ public class App
 			String[] temp = b.split( ":" );
 			groupNames.add( temp[ 0 ] );
 			moduleNames.add( temp[ 1 ] );
-			log.addBuildLogEntry( "EXTRACTED: " + temp[ 0 ] + "." + temp[ 1 ] );
+			log.addBuildLogEntry( "push0ver - EXTRACTED: " + temp[ 0 ] + "." + temp[ 1 ] );
 		}
 	}
 
@@ -380,7 +378,7 @@ public class App
 		catch ( IOException ioe )
 		{
 			ioe.printStackTrace( System.out );
-			log.addBuildLogEntry( "URL Connection Failed." );
+			log.addBuildLogEntry( "push0ver - URL Connection Failed:" );
 			return false;
 		}
 	}

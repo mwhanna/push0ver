@@ -102,12 +102,11 @@ public class PostTask implements TaskType
 			taskSnapRepo = checkGlobalConfig( taskSnapRepo, "snaprepo", context );
 		}
 
-		log.addBuildLogEntry( "URL:  " + taskUrl );
-		log.addBuildLogEntry( "RELEASE REPO:  " + taskReleaseRepo );
+		log.addBuildLogEntry( "push0ver - RELEASE REPO:  " + taskReleaseRepo );
 
 		if ( taskUsername.equals( "Empty" ) || taskPassword.equals( "Empty" ) )
 		{
-			log.addBuildLogEntry( "Username/Password NOT SET" );
+			log.addBuildLogEntry( "push0ver - REPOSITORY Username/Password NOT SET" );
 		}
 
 		String bambooWorkDir = taskContext.getWorkingDirectory().getPath();
@@ -125,7 +124,7 @@ public class PostTask implements TaskType
 				localdir = bambooWorkDir + "/" + localdir;
 			}
 		}
-		log.addBuildLogEntry( "WORKING DIR:  " + localdir );
+		log.addBuildLogEntry( "push0ver - WORKING DIR:  " + localdir );
 
 		try
 		{
@@ -145,7 +144,7 @@ public class PostTask implements TaskType
 			PrintWriter pw = new PrintWriter( sw );
 			e.printStackTrace( pw );
 			String stacktrace = sw.toString();
-			log.addBuildLogEntry( "STACKTRACE:     " + stacktrace );
+			log.addBuildLogEntry( "push0ver - STACKTRACE:     " + stacktrace );
 			taskResultBuilder.failed();
 		}
 

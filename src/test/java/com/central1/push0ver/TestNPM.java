@@ -14,13 +14,12 @@ public class TestNPM {
 
     public void parseNpms(String search, String replace, String localRepo) {
         File folder = new File( localRepo );
-        //buildLogger.addBuildLogEntry( "SEARCHING: " + folder.getPath() );
         File[] listOfFiles = folder.listFiles();
         if ( listOfFiles != null )
         {
             if ( listOfFiles.length < 1 )
             {
-                //buildLogger.addBuildLogEntry( "No files in " + folder.getPath() + "  Maven Build may not have been ran" );
+                // "No files in " + folder.getPath() + "  Maven Build may not have been ran"
             }
             for ( File g : listOfFiles )
             {

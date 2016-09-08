@@ -81,7 +81,7 @@ public class TagExtractor
 		catch ( IOException ioe )
 		{
 			// No luck!
-			final String msg = "TagExtractor Failed to run 'git symbolic-ref --short HEAD' command: " + ioe.toString();
+			final String msg = "push0ver - TagExtractor Failed to run 'git symbolic-ref --short HEAD' command: " + ioe.toString();
 			if ( log != null )
 			{
 				log.addBuildLogEntry( msg );
@@ -110,7 +110,7 @@ public class TagExtractor
 		catch ( IOException ioe )
 		{
 			// No luck!
-			final String msg = "TagExtractor Failed to run 'git log' command: " + ioe.toString();
+			final String msg = "push0ver - TagExtractor Failed to run 'git log' command: " + ioe.toString();
 			if ( log != null )
 			{
 				log.addBuildLogEntry( msg );
@@ -176,18 +176,21 @@ public class TagExtractor
 					String snapshotIfLarger = snapshotIfLarger( tag, snapshot );
 					if ( snapshot == null || snapshotIfLarger == null )
 					{
+						int staleCount = lineCount - 1;
 						if ( log != null )
 						{
-							log.addBuildLogEntry( "push0ver extracted a stale release tag: " + tag + " is " + lineCount
+							log.addBuildLogEntry( "push0ver - EXTRACTED A STALE RELEASE TAG: " + tag + " is " + staleCount
 									+ " commits stale." );
 							log.addBuildLogEntry( "To see for yourself:" );
 							log.addBuildLogEntry( "  git fetch" );
 							log.addBuildLogEntry( "  git log --first-parent --pretty='%h | %ci | %d' -" + lineCount + " origin/" + currentBranch );
-							log.addBuildLogEntry( "NOTE: stale SNAPSHOT tags (e.g., 'x.y.z-SNAPSHOT') are fine as long as they appear AFTER the most recent release tag." );
+							log.addBuildLogEntry(
+									"push0ver - NOTE: stale SNAPSHOT tags (e.g., 'x.y.z-SNAPSHOT') are fine as long as they appear AFTER the most recent release tag." );
 						}
 						if ( badTag != null && badTag.length > 0 )
 						{
-							badTag[ 0 ] = tag;
+							// e.g. "1.2.3-PUSH0VER-22" to indicate a 22-commits stale version.
+							badTag[ 0 ] = tag + "-PUSH0VER-" + staleCount;
 						}
 						return null;
 					}
@@ -214,8 +217,8 @@ public class TagExtractor
 		{
 			if ( log != null )
 			{
-				log.addBuildLogEntry( "push0ver unable to set version in pom.xml. No valid tags found in last 1,000 commits." );
-				log.addBuildLogEntry( "To see for yourself:" );
+				log.addBuildLogEntry( "push0ver - Unable to set version in pom.xml. No valid tags found in last 1,000 commits." );
+				log.addBuildLogEntry( "push0ver - To see for yourself:" );
 				log.addBuildLogEntry( "  git fetch" );
 				log.addBuildLogEntry( "  git log --first-parent --pretty='%h | %ci | %d' -1000 origin/" + currentBranch );
 			}
@@ -278,8 +281,7 @@ public class TagExtractor
 	}
 
 	private static String extractTag(
-			String tagString, TagMode mode, MyLogger log, Set<String> alreadyLoggedInvalids
-			)
+			String tagString, TagMode mode, MyLogger log, Set<String> alreadyLoggedInvalids )
 	{
 		tagString = tagString != null ? tagString.trim() : "";
 		if ( tagString.length() >= 2 )
@@ -307,7 +309,7 @@ public class TagExtractor
 				{
 					if ( log != null )
 					{
-						log.addBuildLogEntry( "push0ver ignoring tag \"" + t
+						log.addBuildLogEntry( "push0ver - IGNORING TAG \"" + t
 								+ "\" since the 1st character is not a digit." );
 						alreadyLoggedInvalids.add( t );
 					}

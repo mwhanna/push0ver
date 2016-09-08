@@ -60,7 +60,7 @@ public class PreApp
 		}
 		else
 		{
-			log.addBuildLogEntry( "You forgot to enter a Repository name! (-Drepo.name=x)" );
+			log.addBuildLogEntry( "push0ver - You forgot to enter a Repository name! (-Drepo.name=x)" );
 		}
 
 		if ( p.getProperty( "art.username" ) != null )
@@ -118,19 +118,19 @@ public class PreApp
 				if ( struct != null )
 				{
 					tag = struct.tag;
-					log.addBuildLogEntry( "PUSH0VER-WINDUP EXTRACTED VALID TAG: " + tag );
+					log.addBuildLogEntry( "push0ver - WINDUP EXTRACTED VALID TAG: " + tag );
 					pref.write( "pre=valid\n" );
 				}
 				else
 				{
-					log.addBuildLogEntry( "PUSH0VER-WINDUP EXTRACTED ALREADY RELEASED TAG: " + tag );
+					log.addBuildLogEntry( "push0ver - WINDUP EXTRACTED ALREADY RELEASED TAG: " + tag );
 					pref.write( "pre=released\n" );
 				}
 			}
 			else if ( badTag[ 0 ] != null )
 			{
 				tag = badTag[ 0 ];
-				log.addBuildLogEntry( "PUSH0VER-WINDUP EXTRACTED STALE TAG: " + tag );
+				log.addBuildLogEntry( "push0ver - WINDUP EXTRACTED STALE TAG: " + tag );
 				pref.write( "pre=stale\n" );
 			}
 			else
@@ -161,7 +161,7 @@ public class PreApp
 				}
 				if ( totalStr.contains( search ) )
 				{
-					log.addBuildLogEntry( "Setting version to " + tag + " inside: " + pomFile.getPath() );
+					log.addBuildLogEntry( "push0ver - Setting version to " + tag + " inside: " + pomFile.getPath() );
 				}
 				totalStr = totalStr.replaceAll( search, tag );
 				FileWriter fw = new FileWriter( pomFile );

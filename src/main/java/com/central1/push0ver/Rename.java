@@ -79,13 +79,13 @@ public class Rename
 	public void renameJars( String search, String replace, String localRepo, boolean doPush )
 	{
 		File folderr = new File( localRepo );
-		buildLogger.addBuildLogEntry( "SEARCHING: " + folderr.getPath() );
+		buildLogger.addBuildLogEntry( "push0ver - SEARCHING: " + folderr.getPath() );
 		File[] listOfFiles = folderr.listFiles();
 		if ( listOfFiles != null )
 		{
 			if ( listOfFiles.length < 1 )
 			{
-				buildLogger.addBuildLogEntry( "No files in " + folderr.getPath() + "  Maven Build may not have been ran" );
+				buildLogger.addBuildLogEntry( "push0ver - No files in " + folderr.getPath() + "  Maven Build may not have been ran" );
 			}
 			for ( File g : listOfFiles )
 			{
@@ -173,7 +173,7 @@ public class Rename
 				}
 				catch ( IOException p )
 				{
-					buildLogger.addBuildLogEntry( "failed to replace: " + f.getPath() );
+					buildLogger.addBuildLogEntry( "push0ver - failed to replace: " + f.getPath() );
 				}
 			}
 			else if ( n.endsWith( ".JAR" ) || n.endsWith( ".WAR" ) || n.endsWith( ".ZIP" ) || n.endsWith( ".EAR" ) )
@@ -236,7 +236,7 @@ public class Rename
 					String existsSha1Target = existsTarget( name ) + ".sha1";
 					if ( App.exists( buildLogger, existsSha1Target, basicAuth ) )
 					{
-						buildLogger.addBuildLogEntry( "The File " + existsTarget( name ) + " Already Exists! Aborting." );
+						buildLogger.addBuildLogEntry( "push0ver - File " + existsTarget( name ) + " Already Exists! Aborting." );
 						return;
 					}
 				}
@@ -269,7 +269,7 @@ public class Rename
 							puts[ t ].setHeader( "Authorization", basicAuth );
 							if ( httpClient == null )
 							{
-								buildLogger.addBuildLogEntry( "HttpClient is NULL" );
+								buildLogger.addBuildLogEntry( "push0ver - HttpClient is NULL" );
 							}
 							response = httpClient.execute( puts[ t ] );
 							StatusLine statusLine = response.getStatusLine();
@@ -277,7 +277,7 @@ public class Rename
 							String tempCode = Integer.toString(statusCode).substring(0,1);
 
 							if (Integer.parseInt(tempCode) == 4 || Integer.parseInt(tempCode) == 5) {
-								buildLogger.addBuildLogEntry("ERROR! DID NOT UPLOAD:  ----     " + response.getStatusLine());
+								buildLogger.addBuildLogEntry("push0ver - ERROR! DID NOT UPLOAD:  ----     " + response.getStatusLine());
 
 								if ( statusCode == 502 )
 								{
@@ -299,7 +299,7 @@ public class Rename
 							{
 								if ( response == null )
 								{
-									buildLogger.addBuildLogEntry( "Response is NULL" );
+									buildLogger.addBuildLogEntry( "push0ver - HTTP Response is NULL" );
 								}
 								response.close();
 							}
@@ -308,11 +308,11 @@ public class Rename
 								b.printStackTrace();
 							}
 						}
-						buildLogger.addBuildLogEntry( "DONE:     " + statusCode + " - " + puts[ t ] );
+						buildLogger.addBuildLogEntry( "push0ver - DONE:     " + statusCode + " - " + puts[ t ] );
 					}
 					else
 					{
-						buildLogger.addBuildLogEntry( "WOULD-DO:    " + puts[ t ] );
+						buildLogger.addBuildLogEntry( "push0ver - WOULD-DO:    " + puts[ t ] );
 					}
 				}
 				try
@@ -481,7 +481,7 @@ public class Rename
 		}
 		catch ( Exception e )
 		{
-			buildLogger.addBuildLogEntry( "CMD FAILED: " + command[ 0 ] );
+			buildLogger.addBuildLogEntry( "push0ver - CMD FAILED: " + command[ 0 ] );
 			e.printStackTrace();
 		}
 	}

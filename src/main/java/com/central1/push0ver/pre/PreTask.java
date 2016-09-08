@@ -91,12 +91,9 @@ public class PreTask implements TaskType
 			taskReleaseRepo = checkGlobalConfig( taskReleaseRepo, "releaserepo", context );
 		}
 
-		log.addBuildLogEntry( "URL:  " + taskUrl );
-		log.addBuildLogEntry( "RELEASE REPO:  " + taskReleaseRepo );
-
 		if ( taskUsername.equals( "Empty" ) || taskPassword.equals( "Empty" ) )
 		{
-			log.addBuildLogEntry( "Username/Password NOT SET" );
+			log.addBuildLogEntry( "push0ver - REPOSITORY Username/Password NOT SET" );
 		}
 
 		String bambooWorkDir = taskContext.getWorkingDirectory().getPath();
@@ -114,7 +111,7 @@ public class PreTask implements TaskType
 				localdir = bambooWorkDir + "/" + localdir;
 			}
 		}
-		log.addBuildLogEntry( "WORKING DIR:  " + localdir );
+		log.addBuildLogEntry( "push0ver - WORKING DIR:  " + localdir );
 
 		try
 		{
