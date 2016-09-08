@@ -171,7 +171,7 @@ public class App
 		String tag = TagExtractor.getTag( gitTarget, false, log, null );
 		if ( tag == null )
 		{
-			log.addBuildLogEntry( "push0ver - ABORT: unable to extract valid tag." );
+			log.addBuildLogEntry( "push0ver - ABORTING - unable to extract valid release or snapshot tag." );
 			return;
 		}
 

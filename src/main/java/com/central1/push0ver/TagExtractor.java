@@ -179,8 +179,9 @@ public class TagExtractor
 						int staleCount = lineCount - 1;
 						if ( log != null )
 						{
+							String commits = staleCount == 1 ? "commit" : "commits";
 							log.addBuildLogEntry( "push0ver - EXTRACTED A STALE RELEASE TAG: " + tag + " is " + staleCount
-									+ " commits stale." );
+									+ " " + commits + " stale." );
 							log.addBuildLogEntry( "To see for yourself:" );
 							log.addBuildLogEntry( "  git fetch" );
 							log.addBuildLogEntry( "  git log --first-parent --pretty='%h | %ci | %d' -" + lineCount + " origin/" + currentBranch );
