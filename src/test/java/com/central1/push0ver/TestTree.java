@@ -380,10 +380,10 @@ public class TestTree
 	@Test
 	public void testCases()
 	{
-		List<String> moduleNames = new ArrayList<>();
-		List<String> groupNames = new ArrayList<>();
+		List<String> moduleNames = new ArrayList<String>();
+		List<String> groupNames = new ArrayList<String>();
 		int swi = 0;
-		List<String> complete = new ArrayList<>();
+		List<String> complete = new ArrayList<String>();
 		String[] testStrings = testString.split( "\n" );
 		for ( String d : testStrings )
 		{

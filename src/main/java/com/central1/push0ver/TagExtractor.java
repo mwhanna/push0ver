@@ -16,11 +16,7 @@ limitations under the License.
 
 package com.central1.push0ver;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,9 +41,26 @@ import java.util.TreeSet;
  */
 public class TagExtractor
 {
-	public static void main( String[] args )
+	public static void main( String[] args ) throws IOException
 	{
-		String tag = getTag( ".", false, null, null );
+	    MyLogger logger = new MyLogger() {
+			@Override
+			public String addBuildLogEntry(String logLine) {
+				System.out.println(logLine);
+				return logLine;
+			}
+		};
+
+	    // Travel up until we find the ".git" dir.
+	    File projectDir = new File(".").getCanonicalFile();
+	    File gitDir = new File(projectDir + "/.git");
+	    while (!gitDir.exists()) {
+	        projectDir = projectDir.getParentFile();
+	        gitDir = new File(projectDir + "/.git");
+        }
+
+		String tag = getTag(projectDir.getAbsolutePath(), false, logger, null );
+
 		if ( tag != null )
 		{
 			System.out.println( tag );
@@ -65,7 +78,7 @@ public class TagExtractor
 		String cmd = "git --no-pager --git-dir=" + projectDir + "/.git symbolic-ref --short HEAD ";
 		String[] command = cmd.split( " " );
 
-		String currentBranch = null;
+		String currentBranch;
 		Process process = null;
 		InputStream in = null;
 		InputStreamReader isr = null;
@@ -134,7 +147,7 @@ public class TagExtractor
 
 	static String extractTag( Reader r, boolean releaseExists, MyLogger log, String[] badTag, String currentBranch )
 	{
-		Set<String> alreadyLoggedInvalids = new TreeSet<>();
+		Set<String> alreadyLoggedInvalids = new TreeSet<String>();
 		BufferedReader br = null;
 		String tag = null;
 		try
@@ -299,7 +312,7 @@ public class TagExtractor
 		tagString = tagString.trim();
 
 		String[] toks = tagString.split( ", " );
-		List<Version> versions = new ArrayList<>();
+		List<Version> versions = new ArrayList<Version>();
 		for ( String t : toks )
 		{
 			if ( t.contains( "tag: " ) )

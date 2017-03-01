@@ -55,8 +55,8 @@ public class PreTask implements TaskType
 	{
 		TaskResultBuilder taskResultBuilder = TaskResultBuilder.newBuilder( taskContext );
 		PluginSettings settings = pluginSettingsFactory.createGlobalSettings();
-		Map<String, Object> context = new HashMap<>();
-		BuildLogger log = taskContext.getBuildLogger();
+		Map<String, Object> context = new HashMap<String, Object>();
+		final BuildLogger log = taskContext.getBuildLogger();
 
 		context.put( "username", settings.get( PLUGIN_STORAGE_KEY + ".username" ) );
 		context.put( "password", settings.get( PLUGIN_STORAGE_KEY + ".password" ) );
@@ -122,7 +122,12 @@ public class PreTask implements TaskType
 			p.setProperty( "art.url", taskUrl );
 			p.setProperty( "mvn.home", mavenHome );
 			p.setProperty( "ssl.trustAll", Boolean.toString( sslTrustAll ) );
-			PreApp.invoke( arg, p, log::addBuildLogEntry );
+			PreApp.invoke( arg, p, new MyLogger() {
+				@Override
+				public String addBuildLogEntry(String s) {
+					return log.addBuildLogEntry(s);
+				}
+			});
 		}
 		catch ( Exception e )
 		{

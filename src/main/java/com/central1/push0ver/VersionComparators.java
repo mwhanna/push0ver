@@ -233,7 +233,7 @@ public class VersionComparators
 		}
 		s = s.toLowerCase( Locale.ENGLISH );
 
-		List<String> splits = new ArrayList<>();
+		List<String> splits = new ArrayList<String>();
 		String tok = "";
 
 		char c = s.charAt( 0 );
@@ -282,50 +282,48 @@ public class VersionComparators
 	{
 		// special case for "RC" or "alpha" or "beta" or "a" or "b" or "u" or "update" or
 		// "patch" or "p" or "rev" or "r" or "svn" or "bzr" or "rel" or "release".
-		switch ( word )
-		{
-			case "rc":
-				return -1;
-			case "b":
-				return -2;
-			case "beta":
-				return -3;
-			case "a":
-				return -4;
-			case "alpha":
-				return -5;
-			case "snapshot":
-				return -10;
-			case "push0ver":
-				return -11;
-			case "cvs":
-				return -21;
-			case "svn":
-				return -21;
-			case "bzr":
-				return -21;
-			case "hg":
-				return -21;
-			case "git":
-				return -21;
-			case "rev":
-				return -100;
-			case "r":
-				return -101;
-			case "release":
-				return 12;
-			case "update":
-				return 11;
-			case "u":
-				return 10;
-			case "patch":
-				return 9;
-			case "p":
-				return 8;
-			case "hotfix":
-				return 7;
-			case "fix":
-				return 6;
+		if (word.equals("rc")) {
+			return -1;
+		} else if (word.equals("b")) {
+			return -2;
+		} else if (word.equals("beta")) {
+			return -3;
+		} else if (word.equals("a")) {
+			return -4;
+		} else if (word.equals("alpha")) {
+			return -5;
+		} else if (word.equals("snapshot")) {
+			return -10;
+		} else if (word.equals("push0ver")) {
+			return -11;
+		} else if (word.equals("cvs")) {
+			return -21;
+		} else if (word.equals("svn")) {
+			return -21;
+		} else if (word.equals("bzr")) {
+			return -21;
+		} else if (word.equals("hg")) {
+			return -21;
+		} else if (word.equals("git")) {
+			return -21;
+		} else if (word.equals("rev")) {
+			return -100;
+		} else if (word.equals("r")) {
+			return -101;
+		} else if (word.equals("release")) {
+			return 12;
+		} else if (word.equals("update")) {
+			return 11;
+		} else if (word.equals("u")) {
+			return 10;
+		} else if (word.equals("patch")) {
+			return 9;
+		} else if (word.equals("p")) {
+			return 8;
+		} else if (word.equals("hotfix")) {
+			return 7;
+		} else if (word.equals("fix")) {
+			return 6;
 		}
 		Long l = toLong( word );
 		return l != null ? 100 : 0; // a pure number (with no alpha) wins against all of those.

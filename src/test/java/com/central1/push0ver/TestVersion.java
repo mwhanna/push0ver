@@ -31,7 +31,7 @@ public class TestVersion
 	@Test
 	public void testOrder()
 	{
-		ArrayList<Version> versions = new ArrayList<>();
+		ArrayList<Version> versions = new ArrayList<Version>();
 		versions.add( new Version( "0.2.1.1-3+b2" ) );
 		versions.add( new Version( "0.2-1.2" ) );
 		versions.add( new Version( "0.2.8-5+b3" ) );
@@ -253,7 +253,7 @@ public class TestVersion
 		InputStreamReader isr = new InputStreamReader( fin, "UTF-8" );
 		BufferedReader br = new BufferedReader( isr );
 		String line;
-		ArrayList<Version> list = new ArrayList<>( 32 * 1024 );
+		ArrayList<Version> list = new ArrayList<Version>( 32 * 1024 );
 		while ( ( line = br.readLine() ) != null )
 		{
 			Version v = new Version( line );

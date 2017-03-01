@@ -38,10 +38,13 @@ public class App
 
 	public static void main( String[] args ) throws Exception
 	{
-		invoke( args, System.getProperties(), logLine -> {
-			System.out.println( logLine );
-			return logLine;
-		} );
+		invoke( args, System.getProperties(), new MyLogger() {
+			@Override
+			public String addBuildLogEntry(String logLine) {
+				System.out.println(logLine);
+				return logLine;
+			}
+		});
 	}
 
 	public static void invoke( final String[] args, final Properties p, final MyLogger log ) throws Exception
@@ -211,7 +214,7 @@ public class App
 			search = tag;
 		}
 
-		log.addBuildLogEntry( "push0ver - Will Execute:  " + String.valueOf( doSomething ) );
+		log.addBuildLogEntry( "push0ver - Will Execute:  " + String.valueOf( doSomething ) + " Based on: " + pathToPom );
 
 		for ( int z = 0; z < struct.moduleNames.size(); z++ )
 		{
@@ -253,8 +256,8 @@ public class App
 	public static class Struct
 	{
 		public String tag;
-		public final List<String> groupNames = new ArrayList<>();
-		public final List<String> moduleNames = new ArrayList<>();
+		public final List<String> groupNames = new ArrayList<String>();
+		public final List<String> moduleNames = new ArrayList<String>();
 	}
 
 	public static Struct checkIfAlreadyReleased(
@@ -295,7 +298,8 @@ public class App
 		{
 			log.addBuildLogEntry( "push0ver - Fetch Tags:   " + k );
 		}
-		process.waitFor( 2, TimeUnit.SECONDS );
+		process.waitFor();
+		// process.waitFor( 2, TimeUnit.SECONDS );
 	}
 
 	private static void parseMavenPoms(
@@ -307,18 +311,19 @@ public class App
 		BufferedReader br = new BufferedReader( new InputStreamReader( process.getInputStream() ) );
 		String line;
 		boolean lookingForInfo = false;
-		List<String> complete = new ArrayList<>();
+		List<String> complete = new ArrayList<String>();
 		while ( ( line = br.readLine() ) != null )
 		{
 			if ( line.startsWith( "[WARNING]" ) )
 			{
 				continue;
 			}
+			log.addBuildLogEntry( "mvn dependency:tree OUTPUT: [" + line + "] lookingForInfo=" + lookingForInfo);
 			if ( lookingForInfo )
 			{
 				if ( line.startsWith( "[INFO]" ) )
 				{
-					if ( !line.contains( "--" ) )
+					if ( line.length() > 7 && !line.contains( "--" ) )
 					{
 						// Need to ignore these:
 						// "[INFO] artifact org.codehaus.woodstox:stax2-api: checking for updates from maven"

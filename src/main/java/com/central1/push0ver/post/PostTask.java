@@ -36,6 +36,7 @@ import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.central1.push0ver.App;
+import com.central1.push0ver.MyLogger;
 
 @ExportAsService( {PostTask.class} )
 @Named( "PostTask" )
@@ -54,10 +55,10 @@ public class PostTask implements TaskType
 
 	public TaskResult execute( TaskContext taskContext ) throws TaskException
 	{
-		BuildLogger log = taskContext.getBuildLogger();
+		final BuildLogger log = taskContext.getBuildLogger();
 		TaskResultBuilder taskResultBuilder = TaskResultBuilder.newBuilder( taskContext );
 		PluginSettings settings = pluginSettingsFactory.createGlobalSettings();
-		Map<String, Object> context = new HashMap<>();
+		Map<String, Object> context = new HashMap<String, Object>();
 
 		context.put( "username", settings.get( PLUGIN_STORAGE_KEY + ".username" ) );
 		context.put( "password", settings.get( PLUGIN_STORAGE_KEY + ".password" ) );
@@ -136,7 +137,12 @@ public class PostTask implements TaskType
 			p.setProperty( "art.url", taskUrl );
 			p.setProperty( "mvn.home", mavenHome );
 			p.setProperty( "ssl.trustAll", Boolean.toString( sslTrustAll ) );
-			App.invoke( arg, p, log::addBuildLogEntry );
+			App.invoke( arg, p, new MyLogger() {
+				@Override
+				public String addBuildLogEntry(String s) {
+					return log.addBuildLogEntry(s);
+				}
+			});
 		}
 		catch ( Exception e )
 		{

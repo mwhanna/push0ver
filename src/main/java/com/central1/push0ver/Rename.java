@@ -21,6 +21,8 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -33,12 +35,14 @@ import java.util.jar.JarFile;
 
 import javax.xml.bind.DatatypeConverter;
 
+import com.google.common.io.Files;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContextBuilder;
+import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -105,7 +109,14 @@ public class Rename
 					//the final chunk will go to the end of aInput
 					result.append( filename.substring( startIdx ) );
 					filename = result.toString();
-					f.renameTo( new File( interimTarget + "/newfiles/" + filename ) );
+					File target = new File( interimTarget + "/newfiles/" + filename );
+					try {
+						Files.move(f, target);
+					} catch (IOException ioe) {
+						throw new RuntimeException("push0ver failed to move files from .m2 repo: " + ioe);
+					}
+					buildLogger.addBuildLogEntry( "push0ver - renaming " + f.getAbsolutePath() + " to " + target.getAbsolutePath() );
+
 				}
 			}
 		}
@@ -180,7 +191,7 @@ public class Rename
 			{
 				try
 				{
-					LinkedHashSet<String> thingsToRezip = new LinkedHashSet<>();
+					LinkedHashSet<String> thingsToRezip = new LinkedHashSet<String>();
 					JarFile jarFile = new JarFile( f );
 					Enumeration<JarEntry> entries = jarFile.entries();
 					while ( entries.hasMoreElements() )
@@ -468,7 +479,8 @@ public class Rename
 					System.out.println( "ERR-STREAM: " + line );
 				}
 
-				process.waitFor( 60, TimeUnit.SECONDS );
+				process.waitFor();
+				// process.waitFor( 60, TimeUnit.SECONDS );
 				if ( hasError )
 				{
 					throw new IOException( "Failed HTTP response: [" + buf + "]" );
@@ -494,7 +506,12 @@ public class Rename
 			try
 			{
 				SSLContextBuilder builder = new SSLContextBuilder();
-				builder.loadTrustMaterial( null, ( chain, authType ) -> true );
+				builder.loadTrustMaterial( null, new TrustStrategy() {
+					@Override
+					public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+						return true;
+					}
+				});
 				SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory( builder.build() );
 				httpClient = HttpClients.custom().setSSLSocketFactory( sslsf ).build();
 			}

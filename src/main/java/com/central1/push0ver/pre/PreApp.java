@@ -30,14 +30,17 @@ import com.central1.push0ver.TagExtractor;
 
 public class PreApp
 {
-	private static List<String> poms = new ArrayList<>();
+	private static List<String> poms = new ArrayList<String>();
 
 	public static void main( String[] args ) throws Exception
 	{
-		invoke( args, System.getProperties(), logLine -> {
-			System.out.println( logLine );
-			return logLine;
-		} );
+		invoke( args, System.getProperties(), new MyLogger() {
+			@Override
+			public String addBuildLogEntry(String logLine) {
+				System.out.println(logLine);
+				return logLine;
+			}
+		});
 	}
 
 	public static void invoke( String[] args, Properties p, MyLogger log ) throws Exception
