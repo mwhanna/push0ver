@@ -318,7 +318,7 @@ public class App
 			{
 				continue;
 			}
-			log.addBuildLogEntry( "mvn dependency:tree OUTPUT: [" + line + "] lookingForInfo=" + lookingForInfo);
+			// log.addBuildLogEntry( "mvn dependency:tree OUTPUT: [" + line + "] lookingForInfo=" + lookingForInfo);
 			if ( lookingForInfo )
 			{
 				if ( line.startsWith( "[INFO]" ) )
@@ -339,7 +339,7 @@ public class App
 						{
 							if ( firstColon < firstSpace )
 							{
-								log.addBuildLogEntry( infoLine );
+								// log.addBuildLogEntry( infoLine );
 								complete.add( infoLine );
 								lookingForInfo = false;
 							}

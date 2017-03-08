@@ -17,12 +17,7 @@ limitations under the License.
 package com.central1.push0ver;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Given a git checkout, this utility extracts the most salient tag for a given HEAD.
@@ -43,10 +38,11 @@ public class TagExtractor
 {
 	public static void main( String[] args ) throws IOException
 	{
+		final StringBuilder logBuf = new StringBuilder(5000);
 	    MyLogger logger = new MyLogger() {
 			@Override
 			public String addBuildLogEntry(String logLine) {
-				System.out.println(logLine);
+				logBuf.append(logLine).append('\n');
 				return logLine;
 			}
 		};
@@ -68,6 +64,7 @@ public class TagExtractor
 		else
 		{
 			System.out.println( "NO TAG" );
+			System.out.println(logBuf.toString());
 		}
 	}
 
