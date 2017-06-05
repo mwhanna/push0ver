@@ -23,19 +23,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.LinkedHashSet;
-import java.util.Locale;
-import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import javax.xml.bind.DatatypeConverter;
 
-import com.google.common.io.Files;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -46,6 +39,8 @@ import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+
+import com.google.common.io.Files;
 
 public class Rename
 {
@@ -110,10 +105,13 @@ public class Rename
 					result.append( filename.substring( startIdx ) );
 					filename = result.toString();
 					File target = new File( interimTarget + "/newfiles/" + filename );
-					try {
-						Files.move(f, target);
-					} catch (IOException ioe) {
-						throw new RuntimeException("push0ver failed to move files from .m2 repo: " + ioe);
+					try
+					{
+						Files.move( f, target );
+					}
+					catch ( IOException ioe )
+					{
+						throw new RuntimeException( "push0ver failed to move files from .m2 repo: " + ioe );
 					}
 					buildLogger.addBuildLogEntry( "push0ver - renaming " + f.getAbsolutePath() + " to " + target.getAbsolutePath() );
 
@@ -285,10 +283,11 @@ public class Rename
 							response = httpClient.execute( puts[ t ] );
 							StatusLine statusLine = response.getStatusLine();
 							statusCode = statusLine.getStatusCode();
-							String tempCode = Integer.toString(statusCode).substring(0,1);
+							String tempCode = Integer.toString( statusCode ).substring( 0, 1 );
 
-							if (Integer.parseInt(tempCode) == 4 || Integer.parseInt(tempCode) == 5) {
-								buildLogger.addBuildLogEntry("push0ver - ERROR! DID NOT UPLOAD:  ----     " + response.getStatusLine());
+							if ( Integer.parseInt( tempCode ) == 4 || Integer.parseInt( tempCode ) == 5 )
+							{
+								buildLogger.addBuildLogEntry( "push0ver - ERROR! DID NOT UPLOAD:  ----     " + response.getStatusLine() );
 
 								if ( statusCode == 502 )
 								{
@@ -312,7 +311,10 @@ public class Rename
 								{
 									buildLogger.addBuildLogEntry( "push0ver - HTTP Response is NULL" );
 								}
-								response.close();
+								else
+								{
+									response.close();
+								}
 							}
 							catch ( IOException b )
 							{
@@ -506,12 +508,14 @@ public class Rename
 			try
 			{
 				SSLContextBuilder builder = new SSLContextBuilder();
-				builder.loadTrustMaterial( null, new TrustStrategy() {
+				builder.loadTrustMaterial( null, new TrustStrategy()
+				{
 					@Override
-					public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+					public boolean isTrusted( X509Certificate[] chain, String authType ) throws CertificateException
+					{
 						return true;
 					}
-				});
+				} );
 				SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory( builder.build() );
 				httpClient = HttpClients.custom().setSSLSocketFactory( sslsf ).build();
 			}

@@ -16,17 +16,12 @@ limitations under the License.
 
 package com.central1.push0ver;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,13 +33,15 @@ public class App
 
 	public static void main( String[] args ) throws Exception
 	{
-		invoke( args, System.getProperties(), new MyLogger() {
+		invoke( args, System.getProperties(), new MyLogger()
+		{
 			@Override
-			public String addBuildLogEntry(String logLine) {
-				System.out.println(logLine);
+			public String addBuildLogEntry( String logLine )
+			{
+				System.out.println( logLine );
 				return logLine;
 			}
-		});
+		} );
 	}
 
 	public static void invoke( final String[] args, final Properties p, final MyLogger log ) throws Exception
@@ -309,6 +306,12 @@ public class App
 		log.addBuildLogEntry( "push0ver - RUNNING:   " + command[ 0 ] + " " + command[ 1 ] + " IN " + pom );
 		Process process = Runtime.getRuntime().exec( command, null, new File( pom ) );
 		BufferedReader br = new BufferedReader( new InputStreamReader( process.getInputStream() ) );
+		parse( br, log, groupNames, moduleNames );
+	}
+
+	private static void parse(
+			BufferedReader br, MyLogger log, List<String> groupNames, List<String> moduleNames ) throws IOException
+	{
 		String line;
 		boolean lookingForInfo = false;
 		List<String> complete = new ArrayList<String>();
@@ -361,6 +364,103 @@ public class App
 		}
 	}
 
+	private static class C
+	{
+		public static void main( String[] args ) throws Exception
+		{
+			String s = "[INFO] Scanning for projects...\n" +
+					"[INFO]                                                                         \n" +
+					"[INFO] ------------------------------------------------------------------------\n" +
+					"[INFO] Building OpenID Connect Server Webapp 1.2.7\n" +
+					"[INFO] ------------------------------------------------------------------------\n" +
+					"[INFO] \n" +
+					"[INFO] --- maven-dependency-plugin:2.1:tree (default-cli) @ oidc-webapp ---\n" +
+					"[INFO] com.central1:oidc-webapp:war:1.2.7\n" +
+					"[INFO] +- org.mitre:openid-connect-server:jar:1.2.6:compile\n" +
+					"[INFO] |  +- org.mitre:openid-connect-common:jar:1.2.6:compile\n" +
+					"[INFO] |  |  +- org.springframework:spring-webmvc:jar:4.1.9.RELEASE:compile\n" +
+					"[INFO] |  |  +- com.google.guava:guava:jar:18.0:compile\n" +
+					"[INFO] |  |  +- org.apache.httpcomponents:httpclient:jar:4.3.6:compile\n" +
+					"[INFO] |  |  |  +- org.apache.httpcomponents:httpcore:jar:4.3.3:compile\n" +
+					"[INFO] |  |  |  \\- commons-codec:commons-codec:jar:1.6:compile\n" +
+					"[INFO] |  |  +- org.springframework.security.oauth:spring-security-oauth2:jar:2.0.3.RELEASE:compile\n" +
+					"[INFO] |  |  |  +- org.springframework.security:spring-security-config:jar:3.2.9.RELEASE:compile (version managed from 3.2.3.RELEASE)\n"
+					+
+					"[INFO] |  |  |  \\- org.codehaus.jackson:jackson-mapper-asl:jar:1.9.13:compile\n" +
+					"[INFO] |  |  |     \\- org.codehaus.jackson:jackson-core-asl:jar:1.9.13:compile\n" +
+					"[INFO] |  |  +- com.nimbusds:nimbus-jose-jwt:jar:4.3:compile\n" +
+					"[INFO] |  |  |  +- net.jcip:jcip-annotations:jar:1.0:compile\n" +
+					"[INFO] |  |  |  +- net.minidev:json-smart:jar:1.3.1:compile\n" +
+					"[INFO] |  |  |  \\- commons-io:commons-io:jar:2.4:compile\n" +
+					"[INFO] |  |  +- com.google.code.gson:gson:jar:2.3.1:compile\n" +
+					"[INFO] |  |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.3.4:compile\n" +
+					"[INFO] |  |  |  \\- com.fasterxml.jackson.core:jackson-core:jar:2.3.4:compile\n" +
+					"[INFO] |  |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.3.4:compile\n" +
+					"[INFO] |  |  \\- org.bouncycastle:bcprov-jdk15on:jar:1.56:compile\n" +
+					"[INFO] |  \\- org.springframework:spring-tx:jar:4.1.9.RELEASE:compile\n" +
+					"[INFO] +- org.springframework:spring-orm:jar:4.1.9.RELEASE:compile\n" +
+					"[INFO] |  +- org.springframework:spring-beans:jar:4.1.9.RELEASE:compile\n" +
+					"[INFO] |  +- org.springframework:spring-core:jar:4.1.9.RELEASE:compile\n" +
+					"[INFO] |  \\- org.springframework:spring-jdbc:jar:4.1.9.RELEASE:compile\n" +
+					"[INFO] +- org.slf4j:jcl-over-slf4j:jar:1.7.12:compile\n" +
+					"[INFO] |  \\- org.slf4j:slf4j-api:jar:1.7.12:compile\n" +
+					"[INFO] +- org.slf4j:slf4j-log4j12:jar:1.7.12:runtime\n" +
+					"[INFO] +- log4j:log4j:jar:1.2.15:runtime\n" +
+					"[INFO] +- org.hsqldb:hsqldb:jar:2.2.9:compile\n" +
+					"[INFO] +- org.eclipse.persistence:org.eclipse.persistence.jpa:jar:2.5.1:compile\n" +
+					"[INFO] |  +- org.eclipse.persistence:javax.persistence:jar:2.1.0:compile\n" +
+					"[INFO] |  +- org.eclipse.persistence:org.eclipse.persistence.asm:jar:2.5.1:compile\n" +
+					"[INFO] |  +- org.eclipse.persistence:org.eclipse.persistence.antlr:jar:2.5.1:compile\n" +
+					"[INFO] |  +- org.eclipse.persistence:org.eclipse.persistence.jpa.jpql:jar:2.5.1:compile\n" +
+					"[INFO] |  \\- org.eclipse.persistence:org.eclipse.persistence.core:jar:2.5.1:compile\n" +
+					"[INFO] +- org.springframework.security:spring-security-taglibs:jar:3.2.9.RELEASE:compile\n" +
+					"[INFO] |  +- org.springframework.security:spring-security-acl:jar:3.2.9.RELEASE:compile\n" +
+					"[INFO] |  |  \\- aopalliance:aopalliance:jar:1.0:compile\n" +
+					"[INFO] |  +- org.springframework.security:spring-security-core:jar:3.2.9.RELEASE:compile\n" +
+					"[INFO] |  +- org.springframework.security:spring-security-web:jar:3.2.9.RELEASE:compile\n" +
+					"[INFO] |  +- org.springframework:spring-aop:jar:4.1.9.RELEASE:compile\n" +
+					"[INFO] |  +- org.springframework:spring-context:jar:4.1.9.RELEASE:compile\n" +
+					"[INFO] |  +- org.springframework:spring-expression:jar:4.1.9.RELEASE:compile\n" +
+					"[INFO] |  \\- org.springframework:spring-web:jar:4.1.9.RELEASE:compile\n" +
+					"[INFO] +- javax.servlet:jstl:jar:1.2:compile\n" +
+					"[INFO] +- com.zaxxer:HikariCP:jar:2.4.1:compile\n" +
+					"[INFO] +- junit:junit:jar:4.7:test\n" +
+					"[INFO] +- org.easymock:easymock:jar:2.0:test\n" +
+					"[INFO] +- org.springframework:spring-test:jar:4.1.9.RELEASE:compile\n" +
+					"[INFO] +- org.mockito:mockito-all:jar:1.9.5:test\n" +
+					"[INFO] +- org.slf4j:slf4j-jdk14:jar:1.7.12:test\n" +
+					"[INFO] +- javax.servlet:servlet-api:jar:2.5:provided\n" +
+					"[INFO] \\- javax.servlet.jsp:jsp-api:jar:2.1:provided\n" +
+					"[INFO] ------------------------------------------------------------------------\n" +
+					"[INFO] BUILD SUCCESS\n" +
+					"[INFO] ------------------------------------------------------------------------\n" +
+					"[INFO] Total time: 0.888 s\n" +
+					"[INFO] Finished at: 2017-03-22T15:30:17-07:00\n" +
+					"[INFO] Final Memory: 20M/1237M\n" +
+					"[INFO] ------------------------------------------------------------------------\n";
+
+			StringReader sr = new StringReader( s );
+			BufferedReader br = new BufferedReader( sr );
+			List<String> groups = new ArrayList<String>();
+			List<String> arts = new ArrayList<String>();
+			MyLogger ml = new MyLogger()
+			{
+
+				@Override
+				public String addBuildLogEntry( String logLine )
+				{
+					System.out.println( logLine );
+					return logLine;
+				}
+			};
+
+			parse( br, ml, groups, arts );
+			System.out.println( "GROUPS: " + groups );
+			System.out.println( "ARTS: " + arts );
+
+		}
+	}
+
 	private static boolean containsWhiteSpace( String s )
 	{
 		Matcher matcher = WS_PATTERN.matcher( s );
@@ -382,8 +482,21 @@ public class App
 		}
 		catch ( IOException ioe )
 		{
-			ioe.printStackTrace( System.out );
-			log.addBuildLogEntry( "push0ver - URL Connection Failed:" );
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter( sw );
+			ioe.printStackTrace( pw );
+			pw.flush();
+			log.addBuildLogEntry( "push0ver - URL Connection Failed" );
+			log.addBuildLogEntry( sw.toString() );
+			try
+			{
+				pw.close();
+				sw.close();
+			}
+			catch ( IOException e )
+			{
+				log.addBuildLogEntry( "Failed to close StringWriter: " + e );
+			}
 			return false;
 		}
 	}
