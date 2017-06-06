@@ -30,17 +30,17 @@ import com.central1.push0ver.TagExtractor;
 
 public class PreApp
 {
-	private static List<String> poms = new ArrayList<String>();
-
 	public static void main( String[] args ) throws Exception
 	{
-		invoke( args, System.getProperties(), new MyLogger() {
+		invoke( args, System.getProperties(), new MyLogger()
+		{
 			@Override
-			public String addBuildLogEntry(String logLine) {
-				System.out.println(logLine);
+			public String addBuildLogEntry( String logLine )
+			{
+				System.out.println( logLine );
 				return logLine;
 			}
-		});
+		} );
 	}
 
 	public static void invoke( String[] args, Properties p, MyLogger log ) throws Exception
@@ -116,8 +116,7 @@ public class PreApp
 			{
 				// Switch to SNAPSHOT if appropriate:
 				App.Struct struct = App.checkIfAlreadyReleased(
-						tag, log, mvnCommand, pathToPom, basicAuthHeader, url, gitTarget, repoName
-						);
+						tag, log, mvnCommand, pathToPom, basicAuthHeader, url, gitTarget, repoName );
 				if ( struct != null )
 				{
 					tag = struct.tag;
@@ -146,29 +145,28 @@ public class PreApp
 			pref.close();
 		}
 
-		dirParser( parentPomDir, parseValue );
 		String search = "0.0.0.0.0-SNAPSHOT";
-
+		List<String> poms = dirParser( parentPomDir, parseValue, new ArrayList<String>() );
 		for ( String y : poms )
 		{
 			File pomFile = new File( pathToPom + y );
 			try
 			{
 				FileReader fr = new FileReader( pomFile );
-				String a;
-				String totalStr = "";
+				String line;
+				StringBuilder totalStr = new StringBuilder();
 				BufferedReader br = new BufferedReader( fr );
-				while ( ( a = br.readLine() ) != null )
+				while ( ( line = br.readLine() ) != null )
 				{
-					totalStr += ( a + "\n" );
+					totalStr.append( line ).append( "\n" );
 				}
-				if ( totalStr.contains( search ) )
+				if ( totalStr.toString().contains( search ) )
 				{
 					log.addBuildLogEntry( "push0ver - Setting version to " + tag + " inside: " + pomFile.getPath() );
 				}
-				totalStr = totalStr.replaceAll( search, tag );
+				totalStr = new StringBuilder( totalStr.toString().replaceAll( search, tag ) );
 				FileWriter fw = new FileWriter( pomFile );
-				fw.write( totalStr );
+				fw.write( totalStr.toString() );
 				fw.close();
 			}
 			catch ( Exception e )
@@ -178,33 +176,32 @@ public class PreApp
 		}
 	}
 
-	private static void dirParser( File dir, int parseValue )
+	private static List<String> dirParser( File dir, int parseValue, List<String> poms )
 	{
 		if ( !dir.canRead() )
 		{
-			return;
-		}
-		File[] dirFiles = dir.listFiles();
-
-		if ( dirFiles != null )
-		{
-			for ( File f : dirFiles )
+			File[] dirFiles = dir.listFiles();
+			if ( dirFiles != null )
 			{
-				if ( f.isFile() )
+				for ( File f : dirFiles )
 				{
-					if ( f.getName().equals( "pom.xml" ) )
+					if ( f.isFile() )
 					{
-						if ( !poms.contains( f.getAbsolutePath().substring( parseValue ) ) )
+						if ( "pom.xml".equals( f.getName() ) )
 						{
-							poms.add( f.getAbsolutePath().substring( parseValue ) );
+							if ( !poms.contains( f.getAbsolutePath().substring( parseValue ) ) )
+							{
+								poms.add( f.getAbsolutePath().substring( parseValue ) );
+							}
 						}
 					}
-				}
-				else if ( f.isDirectory() && f.canRead() && !f.getName().equals( ".git" ) )
-				{
-					dirParser( f, parseValue );
+					else if ( f.isDirectory() && f.canRead() && !f.getName().equals( ".git" ) )
+					{
+						dirParser( f, parseValue, poms );
+					}
 				}
 			}
 		}
+		return poms;
 	}
 }
