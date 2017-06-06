@@ -198,7 +198,7 @@ public class App
 		}
 		tag = struct.tag;
 
-		String search = "0.0.0.0.0-SNAPSHOT";
+		String search = "0".substring( 0, 1 ) + ".0.0.0.0-SNAPSHOT";
 		// If windupStatus ==  null, then push0ver-windup did not run, so no need to check its status.
 		if ( windupStatus != null )
 		{

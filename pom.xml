@@ -25,7 +25,7 @@ limitations under the License.
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>push0ver</groupId>
 	<artifactId>push0ver</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
 
 	<organization>
 		<name>7th Floor Inc.</name>
@@ -180,8 +180,8 @@ limitations under the License.
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>2.3.2</version>
 					<configuration>
-						<source>1.6</source>
-						<target>1.6</target>
+						<source>1.8</source>
+						<target>1.8</target>
 					</configuration>
 				</plugin>
 			</plugins>

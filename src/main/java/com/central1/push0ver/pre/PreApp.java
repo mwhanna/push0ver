@@ -16,15 +16,12 @@ limitations under the License.
 
 package com.central1.push0ver.pre;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 import com.central1.push0ver.App;
+import com.central1.push0ver.FileUtil;
 import com.central1.push0ver.MyLogger;
 import com.central1.push0ver.TagExtractor;
 
@@ -55,7 +52,6 @@ public class PreApp
 			pathToPom = ".";
 		}
 		File parentPomDir = new File( pathToPom );
-		int parseValue = parentPomDir.getAbsolutePath().length();
 
 		if ( p.getProperty( "repo.name" ) != null )
 		{
@@ -145,63 +141,7 @@ public class PreApp
 			pref.close();
 		}
 
-		String search = "0.0.0.0.0-SNAPSHOT";
-		List<String> poms = dirParser( parentPomDir, parseValue, new ArrayList<String>() );
-		for ( String y : poms )
-		{
-			File pomFile = new File( pathToPom + y );
-			try
-			{
-				FileReader fr = new FileReader( pomFile );
-				String line;
-				StringBuilder totalStr = new StringBuilder();
-				BufferedReader br = new BufferedReader( fr );
-				while ( ( line = br.readLine() ) != null )
-				{
-					totalStr.append( line ).append( "\n" );
-				}
-				if ( totalStr.toString().contains( search ) )
-				{
-					log.addBuildLogEntry( "push0ver - Setting version to " + tag + " inside: " + pomFile.getPath() );
-				}
-				totalStr = new StringBuilder( totalStr.toString().replaceAll( search, tag ) );
-				FileWriter fw = new FileWriter( pomFile );
-				fw.write( totalStr.toString() );
-				fw.close();
-			}
-			catch ( Exception e )
-			{
-				e.printStackTrace();
-			}
-		}
-	}
-
-	private static List<String> dirParser( File dir, int parseValue, List<String> poms )
-	{
-		if ( !dir.canRead() )
-		{
-			File[] dirFiles = dir.listFiles();
-			if ( dirFiles != null )
-			{
-				for ( File f : dirFiles )
-				{
-					if ( f.isFile() )
-					{
-						if ( "pom.xml".equals( f.getName() ) )
-						{
-							if ( !poms.contains( f.getAbsolutePath().substring( parseValue ) ) )
-							{
-								poms.add( f.getAbsolutePath().substring( parseValue ) );
-							}
-						}
-					}
-					else if ( f.isDirectory() && f.canRead() && !f.getName().equals( ".git" ) )
-					{
-						dirParser( f, parseValue, poms );
-					}
-				}
-			}
-		}
-		return poms;
+		// Replace the SENTINEL with the TAG !
+		FileUtil.injectTagRecursive( parentPomDir, tag, log );
 	}
 }
