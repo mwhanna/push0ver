@@ -87,7 +87,7 @@ public class FileUtil
 					if ( fout != null )
 					{
 						fout.close();
-						log.addBuildLogEntry( "Injected tag [" + tag + "] into file [" + f + "] (in-memory)" );
+						log.addBuildLogEntry( "push0ver - Injected tag [" + tag + "] into file [" + f + "] (in-memory)" );
 					}
 				}
 			}
@@ -104,7 +104,7 @@ public class FileUtil
 					{
 						throw new RuntimeException( "Failed to move [" + outputFile.getName() + "] to [" + f.getName() + "]." );
 					}
-					log.addBuildLogEntry( "Injected tag [" + tag + "] into file [" + f + "] (via tmp-file)" );
+					log.addBuildLogEntry( "push0ver - Injected tag [" + tag + "] into file [" + f + "] (via tmp-file)" );
 				}
 			}
 			finally

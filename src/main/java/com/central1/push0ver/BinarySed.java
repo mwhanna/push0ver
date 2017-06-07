@@ -7,14 +7,20 @@ public class BinarySed
 	public static boolean replaceAll(
 			File f, String find, String replace, InputStream in, OutputStream out ) throws IOException
 	{
+		final byte[] buf = new byte[ 5000 ];
+		final byte[] findBytes = find.getBytes( "UTF-8" );
+		final byte[] replaceBytes = replace.getBytes( "UTF-8" );
+		final KmpStringMatcher kmp = new KmpStringMatcher( find );
 		boolean foundMatch = false;
 		try
 		{
-			KmpStringMatcher kmp = new KmpStringMatcher( find );
-			byte[] buf = new byte[ 5000 ];
+			// Match not possible is file is smaller than sentinel.
+			if ( f.length() < findBytes.length )
+			{
+				return false;
+			}
+
 			int pos = 0;
-			byte[] findBytes = find.getBytes( "UTF-8" );
-			byte[] replaceBytes = replace.getBytes( "UTF-8" );
 			int c;
 			int savedFromLastTime = 0;
 			while ( ( c = in.read( buf, pos, buf.length - pos ) ) >= 0 )
