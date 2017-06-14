@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.central1.psa.applications.realtime.emt</groupId>
+    <artifactId>emt-simulator</artifactId>
+    <version>0.0.0.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>EMT - Simulator</name>
+    <url>http://central1.com</url>
+
+    <parent>
+        <groupId>com.central1.psa.applications.realtime</groupId>
+        <artifactId>emt</artifactId>
+        <version>0.0.0.0.0-SNAPSHOT</version>
+    </parent>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                    <optimize>false</optimize>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Include the test classes and all the required dependencies. This
+                jar can be used off the command line (or with jmeter) for sending arbitrary
+                eTransfers into PSA.
+             -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${maven-shade-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.handlers</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.schemas</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.central1.psa.emt.simulator.client.EmtRunner</mainClass>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+                                    <resource>emt-app.properties</resource>
+                                </transformer>
+                 
+								<transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+									<resource>.RSA</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+									<resource>.SF</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+									<resource>.rsa</resource>
+								</transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+
+        <!-- PSA - Realtime shared components -->
+
+        <dependency>
+            <groupId>com.central1.psa.applications.realtime.emt</groupId>
+            <artifactId>emt-interac</artifactId>
+ 
+        </dependency>
+
+        <!-- PSA - EMT shared components -->
+        <dependency>
+            <groupId>com.central1.psa.applications.realtime.emt</groupId>
+            <artifactId>emt-app</artifactId>
+         
+        </dependency>
+
+        <dependency>
+            <groupId>com.central1.psa.applications.realtime.emt</groupId>
+            <artifactId>emt-shared</artifactId>
+
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-camel</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-jms</artifactId>
+        </dependency>
+
+        <!-- PSA - Payment message -->
+        <dependency>
+            <groupId>com.central1.psa.core</groupId>
+            <artifactId>paymentmessage</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.central1.psa.core</groupId>
+            <artifactId>paymentmessage</artifactId>
+            <scope>runtime</scope>
+            <type>test-jar</type>
+        </dependency>
+
+        <!-- Camel -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-core</artifactId>
+        </dependency>
+
+        <!-- For the netty component -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-netty</artifactId>
+        </dependency>
+
+        <!-- For the quartz component -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-quartz</artifactId>
+        </dependency>
+
+        <!-- Camel Spring Test -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-test</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-test-spring</artifactId>
+        </dependency>
+
+        <!-- For ISO -->
+        <dependency>
+            <groupId>org.nucleus8583</groupId>
+            <artifactId>nucleus8583-core</artifactId>
+        </dependency>
+
+        <!-- Banking Host Service -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-spring</artifactId>
+        </dependency>
+
+        <!-- Spring -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+
+        <!-- JMX -->
+        <dependency>
+            <groupId>com.central1.cap.java6.monitor</groupId>
+            <artifactId>monitor</artifactId>
+        </dependency>
+
+        <!-- Active MQ -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-pool</artifactId>
+        </dependency>
+
+        <!-- Logging -->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <!-- Unit testing -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.central1.psa.applications.realtime</groupId>
+            <artifactId>real-time-shared-bhs-simulator</artifactId>
+        </dependency>
+
+        <!-- PSA real-time shared persistence components -->
+        <dependency>
+            <groupId>com.central1.psa.applications.realtime</groupId>
+            <artifactId>real-time-shared-persistence</artifactId>
+        </dependency>
+
+        <!-- PSA client -->
+        <dependency>
+            <groupId>com.central1.psa.core.components.shared</groupId>
+            <artifactId>client</artifactId>
+            <version>2.1.0</version>
+           
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.central1.psa.applications.realtime</groupId>
+            <artifactId>real-time-shared</artifactId>
+            <version>${real-time-shared.version}</version>
+            <type>test-jar</type>
+        </dependency>
+
+        <!-- HSQL database driver support -->
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.central1.psa.applications.realtime.emt</groupId>
+            <artifactId>emt-shared</artifactId>
+            <type>test-jar</type>
+            <version>0.0.0.0.0-SNAPSHOT</version>
+        </dependency>
+
+    </dependencies>
+</project>

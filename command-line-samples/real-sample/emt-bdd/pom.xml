@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>emt</artifactId>
+        <groupId>com.central1.psa.applications.realtime</groupId>
+        <version>0.0.0.0.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>emt-bdd</artifactId>
+    <properties>
+        <psa.version>2.0.7</psa.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.central1.psa.applications.realtime.emt</groupId>
+            <artifactId>emt-shared</artifactId>
+            <version>0.0.0.0.0-SNAPSHOT</version>
+            <type>test-jar</type>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.central1.psa.core</groupId>
+            <artifactId>paymentmessage</artifactId>
+            <version>${psa.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.central1.psa.core</groupId>
+            <artifactId>paymentmessage</artifactId>
+            <version>${psa.version}</version>
+            <type>test-jar</type>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.central1.psa.applications.realtime</groupId>
+            <artifactId>real-time-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.central1.psa.applications.realtime</groupId>
+            <artifactId>real-time-shared</artifactId>
+            <classifier>tests</classifier>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.central1.psa.core.components.shared</groupId>
+            <artifactId>client</artifactId>
+            <version>${psa.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-spring</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-camel</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-jms</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-test-spring</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.central1.psa.applications.realtime.emt</groupId>
+            <artifactId>emt-shared</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <!-- skip test phase as we only want to run integration tests when specified with the profile -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+
+        <!-- Integration test profile -->
+        <profile>
+            <id>integration</id>
+            <properties>
+                <include.category>com.central1.psa.IntegrationTestCategory</include.category>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <testFailureIgnore>true</testFailureIgnore>
+                            </systemPropertyVariables>
+
+                            <skipTests>false</skipTests>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

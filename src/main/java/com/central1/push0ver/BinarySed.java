@@ -14,8 +14,8 @@ public class BinarySed
 		boolean foundMatch = false;
 		try
 		{
-			// Match not possible is file is smaller than sentinel.
-			if ( f.length() < findBytes.length )
+			// Match not possible if file is smaller than sentinel.
+			if ( f != null && f.length() < findBytes.length )
 			{
 				return false;
 			}
@@ -25,8 +25,13 @@ public class BinarySed
 			int savedFromLastTime = 0;
 			while ( ( c = in.read( buf, pos, buf.length - pos ) ) >= 0 )
 			{
+				if ( c == 0 )
+				{
+					continue;
+				}
+
 				int x = kmp.search( buf );
-				if ( x >= 0 )
+				if ( x >= 0 && x <= c + savedFromLastTime - findBytes.length )
 				{
 					foundMatch = true;
 					out.write( buf, 0, x );
@@ -37,10 +42,18 @@ public class BinarySed
 				}
 				else
 				{
-					out.write( buf, 0, c - findBytes.length + savedFromLastTime );
-					pos = findBytes.length;
-					System.arraycopy( buf, c - findBytes.length + savedFromLastTime, buf, 0, pos );
-					savedFromLastTime = pos;
+					if ( c - findBytes.length + savedFromLastTime > 0 )
+					{
+						out.write( buf, 0, c - findBytes.length + savedFromLastTime );
+						pos = findBytes.length;
+						System.arraycopy( buf, c - findBytes.length + savedFromLastTime, buf, 0, pos );
+						savedFromLastTime = pos;
+					}
+					else
+					{
+						pos = c + savedFromLastTime;
+						savedFromLastTime = pos;
+					}
 				}
 			}
 

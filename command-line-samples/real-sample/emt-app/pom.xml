@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.central1.psa.applications.realtime.emt</groupId>
+	<artifactId>emt-app</artifactId>
+	<version>0.0.0.0.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+	<name>EMT - Application</name>
+	<url>http://central1.com</url>
+
+	<!--java -classpath .:emt-app.jar com.central1.psa.emt.ui.impl.Main -->
+
+	<parent>
+		<groupId>com.central1.psa.applications.realtime</groupId>
+		<artifactId>emt</artifactId>
+		<version>0.0.0.0.0-SNAPSHOT</version>
+	</parent>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-plugin.version}</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+					<optimize>false</optimize>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>${maven-shade-plugin.version}</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<transformers>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>com.central1.psa.emt.ui.impl.Main</mainClass>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+									<resource>emt-app.properties</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+									<resource>emt-env.properties</resource>
+								</transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+                                    <resource>posmon-client.properties</resource>
+                                </transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+									<resource>ehcache.xml</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+									<resource>log4j.properties</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+									<resource>monitor.properties</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/spring.handlers</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/spring.schemas</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+									<resource>.RSA</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+									<resource>.SF</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+									<resource>.rsa</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+									<resource>.java</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+									<resource>.scala</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+									<resource>.html</resource>
+								</transformer>
+                                <!--  transformers for CXF (see http://stackoverflow.com/a/9069435/61298) -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.handlers</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/services/com.sun.tools.xjc.Plugin</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.schemas</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/cxf/cxf.extension</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+                                    <resource>META-INF/extensions.xml</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+                                    <resource>META-INF/cxf/extensions.xml</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/cxf/bus-extensions.txt</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+                                    <resource>META-INF/cxf/bus-extensions.xml</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+                                    <resource>META-INF/wsdl.plugin.xml</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+                                    <resource>META-INF/tools.service.validator.xml</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+                                    <resource>META-INF/cxf/java2wsbeans.xml</resource>
+                                </transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.camel</groupId>
+				<artifactId>camel-maven-plugin</artifactId>
+				<version>${camel-maven-plugin.version}</version>
+				<configuration>
+					<mainClass>com.central1.psa.emt.ui.impl.Main</mainClass>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.6</version>
+				<executions>
+					<execution>
+						<id>add-generated-source</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>${project.build.directory}/generated-sources/annotations</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+        <dependency>
+            <groupId>com.central1.psa.applications.realtime.emt</groupId>
+            <artifactId>interac-34</artifactId>
+        </dependency>
+
+		<dependency>
+			<groupId>com.central1.buildtools</groupId>
+			<artifactId>beautifulbeanbuilder</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.central1.buildtools</groupId>
+			<artifactId>beautifulbeanbuilder-processor</artifactId>
+		</dependency>
+
+		<!-- PSA - Realtime shared components -->
+		<dependency>
+			<groupId>com.central1.psa.applications.realtime</groupId>
+			<artifactId>real-time-shared</artifactId>
+		</dependency>
+
+		<!-- PSA - Realtime shared components -->
+		<dependency>
+			<groupId>com.central1.psa.applications.realtime</groupId>
+			<artifactId>real-time-shared</artifactId>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>com.central1.psa.core</groupId>
+			<artifactId>paymentmessage</artifactId>
+			<scope>test</scope>
+			<type>test-jar</type>
+		</dependency>
+
+		<!--Central Dependencies-->
+		<dependency>
+			<groupId>com.cucbc</groupId>
+			<artifactId>cucbc-common</artifactId>
+			<version>1.1.40</version>
+		</dependency>
+
+        <dependency>
+            <groupId>org.restlet.jee</groupId>
+            <artifactId>org.restlet.ext.xstream</artifactId>
+            <version>2.0.5</version>
+        </dependency>
+
+		<!-- PSA real-time shared persistence components -->
+		<dependency>
+			<groupId>com.central1.psa.applications.realtime</groupId>
+			<artifactId>real-time-shared-persistence</artifactId>
+		</dependency>
+
+		<!-- PSA - EMT shared components -->
+		<dependency>
+			<groupId>com.central1.psa.applications.realtime.emt</groupId>
+			<artifactId>emt-shared</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.central1.psa.applications.realtime.emt</groupId>
+			<artifactId>emt-interac</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.central1.psa.applications.realtime.emt</groupId>
+			<artifactId>emt-interac-simulator</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- PSA - EMT shared components -->
+		<dependency>
+			<groupId>com.central1.psa.applications.realtime.emt</groupId>
+			<artifactId>emt-shared</artifactId>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
+
+		<!-- PSA - Realtime shared banking host -->
+		<dependency>
+			<groupId>com.central1.psa.applications.realtime</groupId>
+			<artifactId>real-time-shared-bhs</artifactId>
+		</dependency>
+
+		<!-- PSA - Realtime shared banking host -->
+		<dependency>
+			<groupId>com.central1.psa.applications.realtime</groupId>
+			<artifactId>real-time-shared-bhs</artifactId>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-camel</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-jms</artifactId>
+		</dependency>
+
+		<!-- PSA - Payment message -->
+		<dependency>
+			<groupId>com.central1.psa.core</groupId>
+			<artifactId>paymentmessage</artifactId>
+		</dependency>
+		<!-- PSA - Persistence Service -->
+		<dependency>
+			<groupId>com.central1.psa.core.components.shared</groupId>
+			<artifactId>persistence</artifactId>
+		</dependency>
+		<!-- Camel -->
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>joda-time</groupId>
+			<artifactId>joda-time</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.joda</groupId>
+			<artifactId>joda-money</artifactId>
+		</dependency>
+		<!-- For the netty component -->
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-netty</artifactId>
+		</dependency>
+
+		<!-- For the quartz component -->
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-quartz</artifactId>
+		</dependency>
+
+		<!-- Camel Spring Test -->
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-test</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-test-spring</artifactId>
+		</dependency>
+
+		<!-- For ISO -->
+		<dependency>
+			<groupId>org.nucleus8583</groupId>
+			<artifactId>nucleus8583-core</artifactId>
+		</dependency>
+
+		<!-- Banking Host Service -->
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-spring</artifactId>
+		</dependency>
+
+		<!-- MF Webservices -->
+		<dependency>
+			<groupId>com.central1.mfservices</groupId>
+			<artifactId>mfservices-client</artifactId>
+			<version>2.0.11</version>
+		</dependency>
+
+		<!-- Position Monitoring -->
+		<dependency>
+			<groupId>com.central1.posmonservices</groupId>
+			<artifactId>posmonservices-api</artifactId>
+			<version>0.0.8</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.central1.posmonservices</groupId>
+			<artifactId>posmonservices-client</artifactId>
+			<version>1.0.5</version>
+		</dependency>
+
+		<!-- Spring -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+
+		<!-- JMX -->
+		<dependency>
+			<groupId>com.central1.cap.java6.monitor</groupId>
+			<artifactId>monitor</artifactId>
+		</dependency>
+
+		<!-- Active MQ -->
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-client</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-pool</artifactId>
+		</dependency>
+
+		<!-- Logging -->
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+
+		<!-- Unit testing -->
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- PSA core component dependencies for ***Integration Testing Only*** -->
+		<dependency>
+			<groupId>com.central1.psa.core</groupId>
+			<artifactId>api</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.central1.psa.core.pipeline</groupId>
+			<artifactId>clearancepublisher</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.central1.psa.core.pipeline</groupId>
+			<artifactId>clearancerouter</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.central1.psa.core.pipeline</groupId>
+			<artifactId>paymentservice</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.central1.psa.core</groupId>
+			<artifactId>paymentmessage</artifactId>
+			<scope>test</scope>
+			<type>test-jar</type>
+		</dependency>
+
+		<dependency>
+			<groupId>com.central1.psa.core.pipeline</groupId>
+			<artifactId>settlementrouter</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.central1.psa.core.pipeline</groupId>
+			<artifactId>transactionmanager</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.central1.psa.core.components</groupId>
+			<artifactId>clearers</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.central1.psa.core.components.settlers</groupId>
+			<artifactId>nullSettler</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.central1.psa.applications.realtime</groupId>
+			<artifactId>real-time-shared-bhs-simulator</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- PSA real-time shared persistence components -->
+		<dependency>
+			<groupId>com.central1.psa.applications.realtime</groupId>
+			<artifactId>real-time-shared-persistence</artifactId>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
+
+		<!-- HSQL database driver support -->
+		<dependency>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- AssertJ -->
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>

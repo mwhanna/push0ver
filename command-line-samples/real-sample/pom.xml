@@ -1,0 +1,896 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>payments</groupId>
+        <artifactId>parent</artifactId>
+        <version>3.0.0</version>
+    </parent>
+
+    <version>0.0.0.0.0-SNAPSHOT</version>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.central1.psa.applications.realtime</groupId>
+    <artifactId>emt</artifactId>
+    <packaging>pom</packaging>
+    <properties>
+        <psa.version>2.7.0</psa.version>
+        <real-time-shared.version>1.1.24</real-time-shared.version>
+        <camel.version>2.13.1</camel.version>
+        <camel-maven-plugin.version>2.13.1</camel-maven-plugin.version>
+        <activemq.version>5.9.0</activemq.version>
+        <spring.version>3.2.9.RELEASE</spring.version>
+        <spring.data.version>1.6.0.RELEASE</spring.data.version>
+        <spring.retry.version>1.1.3.RELEASE</spring.retry.version>
+        <jsendnsca-version>1.3.1</jsendnsca-version>
+        <junit.version>4.12</junit.version>
+        <atomikos.version>3.8.0</atomikos.version>
+        <jacoco-maven-plugin.version>0.5.10.201208310627</jacoco-maven-plugin.version>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+        <maven-compiler-plugin.version>2.5.1</maven-compiler-plugin.version>
+        <maven-jar-plugin.version>2.4</maven-jar-plugin.version>
+        <maven-javadoc-plugin.version>2.8.1</maven-javadoc-plugin.version>
+        <maven-jetty-plugin.version>7.5.2.v20111006</maven-jetty-plugin.version>
+        <maven-shade-plugin.version>2.1</maven-shade-plugin.version>
+        <maven-source-plugin.version>2.1.2</maven-source-plugin.version>
+        <maven-surefire-plugin.version>2.10</maven-surefire-plugin.version>
+        <maven-war-plugin.version>2.2</maven-war-plugin.version>
+        <pitest-maven.version>0.29</pitest-maven.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <timestamp>${maven.build.timestamp}</timestamp>
+        <tomcat6-maven-plugin.version>2.1</tomcat6-maven-plugin.version>
+        <jmx.version>1.0.24</jmx.version>
+        <opensaml.version>2.5.1</opensaml.version>
+        <assertj.version>1.6.0</assertj.version>
+        <hibernate.version>4.3.11.Final</hibernate.version>
+        <xstream.version>1.4.5</xstream.version>
+    </properties>
+
+    <modules>
+        <module>emt-interac</module>
+        <module>emt-data-migration</module>
+        <module>emt-interac-simulator</module>
+        <module>emt-shared</module>
+        <module>emt-app</module>
+        <module>emt-simulator</module>
+        <module>emt-settlement</module>
+        <module>emt-selenium</module>
+        <module>emt-utils</module>
+        <module>emt-bdd</module>
+        <module>emt-gateway</module>
+    </modules>
+
+    <repositories>
+        <repository>
+            <id>artifactory.oss.central1.com</id>
+            <url>https://artifactory.oss.central1.com/artifactory/repo</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>artifactory.oss.central1.com</id>
+            <url>https://artifactory.oss.central1.com/artifactory/repo</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.central1.psa.applications.realtime.emt</groupId>
+                <artifactId>emt-shared</artifactId>
+                <version>0.0.0.0.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.applications.realtime.emt</groupId>
+                <artifactId>emt-interac</artifactId>
+                <version>0.0.0.0.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.applications.realtime.emt</groupId>
+                <artifactId>emt-interac</artifactId>
+                <version>0.0.0.0.0-SNAPSHOT</version>
+                <scope>test</scope>
+                <classifier>tests</classifier>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.applications.realtime.emt</groupId>
+                <artifactId>emt-interac-simulator</artifactId>
+                <version>0.0.0.0.0-SNAPSHOT</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.applications.realtime.emt</groupId>
+                <artifactId>emt-app</artifactId>
+                <version>0.0.0.0.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.applications.realtime.emt</groupId>
+                <artifactId>emt-settlement</artifactId>
+                <version>0.0.0.0.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.applications.realtime.emt</groupId>
+                <artifactId>emt-data-migration</artifactId>
+                <version>0.0.0.0.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.applications.realtime.emt</groupId>
+                <artifactId>emt-shared</artifactId>
+                <version>0.0.0.0.0-SNAPSHOT</version>
+                <scope>test</scope>
+                <classifier>tests</classifier>
+            </dependency>
+
+            <dependency>
+                <groupId>com.thoughtworks.xstream</groupId>
+                <artifactId>xstream</artifactId>
+                <version>${xstream.version}</version>
+            </dependency>
+
+            <!-- Real Time Shared -->
+            <dependency>
+                <groupId>com.central1.psa.applications.realtime.emt</groupId>
+                <artifactId>interac-34</artifactId>
+                <version>${real-time-shared.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.applications.realtime</groupId>
+                <artifactId>real-time-shared</artifactId>
+                <version>${real-time-shared.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.central1.psa.applications.realtime</groupId>
+                <artifactId>real-time-shared</artifactId>
+                <version>${real-time-shared.version}</version>
+                <scope>test</scope>
+                <classifier>tests</classifier>
+            </dependency>
+            
+            <!-- Real Time Shared Reporting -->
+            <dependency>
+                <groupId>com.central1.psa.applications.realtime</groupId>
+                <artifactId>real-time-shared-reporting</artifactId>
+                <version>${real-time-shared.version}</version>
+            </dependency>         
+            <dependency>
+                <groupId>com.central1.psa.applications.realtime</groupId>
+                <artifactId>real-time-shared-reporting</artifactId>
+                <version>${real-time-shared.version}</version>
+                <scope>test</scope>
+                <classifier>tests</classifier>
+            </dependency>                   
+            <dependency>
+                <groupId>com.central1.psa.applications.realtime</groupId>
+                <artifactId>real-time-shared-persistence</artifactId>
+                <version>${real-time-shared.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.applications.realtime</groupId>
+                <artifactId>real-time-shared-persistence</artifactId>
+                <version>${real-time-shared.version}</version>
+                <scope>test</scope>
+                <classifier>tests</classifier>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.applications.realtime</groupId>
+                <artifactId>real-time-shared-bhs-simulator</artifactId>
+                <version>${real-time-shared.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.applications.realtime</groupId>
+                <artifactId>real-time-shared-bhs</artifactId>
+                <version>${real-time-shared.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.applications.realtime</groupId>
+                <artifactId>real-time-shared-bhs</artifactId>
+                <version>${real-time-shared.version}</version>
+                <scope>test</scope>
+                <classifier>tests</classifier>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.applications.realtime.iop</groupId>
+                <artifactId>iop-shared-persistence</artifactId>
+                <version>1.0.106</version>
+            </dependency>
+            
+            <!-- TODO DJ: Move -->
+            <dependency>
+            	<groupId>com.microsoft.sqlserver.jdbc</groupId>
+            	<artifactId>sqljdbc4</artifactId>
+                <version>4.0</version>
+        	</dependency>
+
+            <!-- Adding in all dependencies from Parent POM -->
+            <dependency>
+                <groupId>com.central1.buildtools</groupId>
+                <artifactId>beautifulbeanbuilder-processor</artifactId>
+                     <version>1.32</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.opensaml</groupId>
+                <artifactId>opensaml</artifactId>
+                <version>2.5.1</version>
+                     <exclusions>
+                        <exclusion>
+                            <groupId>org.apache.xerces</groupId>
+                            <artifactId>xercesImpl</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.apache.xerces</groupId>
+                            <artifactId>xml-apis</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>xerces</groupId>
+                            <artifactId>xml-apis</artifactId>
+                        </exclusion>
+                    </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.central1.buildtools</groupId>
+                <artifactId>beautifulbeanbuilder</artifactId>
+                     <version>1.32</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpasyncclient</artifactId>
+                <version>4.0.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1</groupId>
+                <artifactId>c1-shared</artifactId>
+                <version>1.0.29</version>
+                <exclusions>
+                    <exclusion>
+                        <!-- don't want to bring this in, we are using JSR305 now -->
+                        <groupId>findbugs</groupId>
+                        <artifactId>annotations</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- PSA - Payment message -->
+            <dependency>
+                <groupId>com.central1.psa.core</groupId>
+                <artifactId>api</artifactId>
+                <version>${psa.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.core</groupId>
+                <artifactId>paymentmessage</artifactId>
+                <version>${psa.version}</version>
+            </dependency>
+             <dependency>
+                <groupId>com.central1.psa.core</groupId>
+                <artifactId>paymentmessage</artifactId>
+                <version>${psa.version}</version>
+                <scope>test</scope>
+                <type>test-jar</type>
+            </dependency>          
+
+            <dependency>
+                <groupId>com.central1.psa.core.pipeline</groupId>
+                <artifactId>clearancepublisher</artifactId>
+                <version>${psa.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.activemq</groupId>
+                        <artifactId>activemq-all</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.core.pipeline</groupId>
+                <artifactId>clearancerouter</artifactId>
+                <version>${psa.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.activemq</groupId>
+                        <artifactId>activemq-all</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.core.pipeline</groupId>
+                <artifactId>paymentservice</artifactId>
+                <version>${psa.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.activemq</groupId>
+                        <artifactId>activemq-all</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.core.pipeline</groupId>
+                <artifactId>settlementrouter</artifactId>
+                <version>${psa.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.activemq</groupId>
+                        <artifactId>activemq-all</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.core.pipeline</groupId>
+                <artifactId>transactionmanager</artifactId>
+                <version>${psa.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.activemq</groupId>
+                        <artifactId>activemq-all</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.core.pipeline</groupId>
+                <artifactId>end</artifactId>
+                <version>${psa.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.activemq</groupId>
+                        <artifactId>activemq-all</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.core.components</groupId>
+                <artifactId>clearers</artifactId>
+                <version>${psa.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.psa.core.components.settlers</groupId>
+                <artifactId>nullSettler</artifactId>
+                <version>${psa.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- PSA - PSA Persistence Service -->
+            <dependency>
+                <groupId>com.central1.psa.core.components.shared</groupId>
+                <artifactId>persistence</artifactId>
+                <version>${psa.version}</version>
+            </dependency>
+            
+            <!-- PSA client -->
+            <dependency>
+                <groupId>com.central1.psa.core.components.shared</groupId>
+                <artifactId>client</artifactId>
+                <version>${psa.version}</version>
+                <scope>test</scope>
+            </dependency>
+            
+            <!--Single sign-on library -->
+            <dependency>
+                <groupId>dk.itst.oiosaml</groupId>
+                <artifactId>oiosaml</artifactId>
+                <version>7780</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>xerces</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>log4j-over-slf4j</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- Apache commons -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.3</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.4</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-math3</artifactId>
+                <version>3.3</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-validator</groupId>
+                <artifactId>commons-validator</artifactId>
+                <version>1.4.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>4.0</version>
+            </dependency>
+
+            <!-- For ISO serialization -->
+            <dependency>
+                <groupId>com.central1.cap.java6</groupId>
+                <artifactId>iso</artifactId>
+                <version>1.0.10</version>
+            </dependency>
+
+            <!-- Google commons -->
+            <dependency>
+                <groupId>com.google.collections</groupId>
+                <artifactId>google-collections</artifactId>
+                <version>0.8</version>
+            </dependency>
+
+            <!-- Scheduler -->
+            <dependency>
+                <groupId>org.quartz-scheduler</groupId>
+                <artifactId>quartz</artifactId>
+                <version>1.8.5</version>
+            </dependency>
+
+            <!-- Joda Money -->
+            <dependency>
+                <groupId>org.joda</groupId>
+                <artifactId>joda-money</artifactId>
+                <version>0.6</version>
+            </dependency>
+
+            <!-- Joda Date/Time -->
+            <dependency>
+                <groupId>joda-time</groupId>
+                <artifactId>joda-time</artifactId>
+                <version>2.1</version>
+            </dependency>
+
+            <!-- Secure FTP -->
+            <dependency>
+                <groupId>com.jcraft</groupId>
+                <artifactId>jsch</artifactId>
+                <version>0.1.49</version>
+            </dependency>
+
+            <!-- JPOS ISO library -->
+            <dependency>
+                <groupId>org.jpos</groupId>
+                <artifactId>jpos</artifactId>
+                <version>1.8.8</version>
+            </dependency>
+
+            <!-- For ISO -->
+            <dependency>
+                <groupId>org.nucleus8583</groupId>
+                <artifactId>nucleus8583-core</artifactId>
+                <version>2.4.0</version>
+            </dependency>
+
+            <!-- For network I/O -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty</artifactId>
+                <version>3.6.6.Final</version>
+            </dependency>
+
+            <!-- Some third party jar uses this -->
+            <dependency>
+                <groupId>com.sleepycat</groupId>
+                <artifactId>je</artifactId>
+                <version>4.0.92</version>
+            </dependency>
+
+            <!-- jdbc database driver implementation -->
+            <dependency>
+                <groupId>net.sourceforge.jtds</groupId>
+                <artifactId>jtds</artifactId>
+                <version>1.2.8</version>
+            </dependency>
+
+            <!-- for c3p0 data source support -->
+            <dependency>
+                <groupId>c3p0</groupId>
+                <artifactId>c3p0</artifactId>
+                <version>0.9.1.2</version>
+            </dependency>
+
+            <!--HSQL database driver support-->
+            <dependency>
+                <groupId>org.hsqldb</groupId>
+                <artifactId>hsqldb</artifactId>
+                <version>2.2.9</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- Equals verify -->
+            <dependency>
+                <groupId>nl.jqno.equalsverifier</groupId>
+                <artifactId>equalsverifier</artifactId>
+                <version>1.1.3</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- Bean IO used to read fixed format files -->
+            <dependency>
+                <groupId>org.beanio</groupId>
+                <artifactId>beanio</artifactId>
+                <version>2.1.0.M1</version>
+            </dependency>
+
+            <!-- For mocking in test cases -->
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-all</artifactId>
+                <version>1.9.5</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- AOP dependency -->
+            <dependency>
+                <groupId>cglib</groupId>
+                <artifactId>cglib</artifactId>
+                <version>2.2</version>
+            </dependency>
+
+            <!-- Google Guava library -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>17.0</version>
+            </dependency>
+
+            <!-- LDAP -->
+            <dependency>
+                <groupId>com.central1.ops</groupId>
+                <artifactId>AclAuthentication</artifactId>
+                <version>0.0.0-20110719</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1.ops</groupId>
+                <artifactId>LdapRoleLoader</artifactId>
+                <version>0.0.0-20110719</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>1.9</version>
+            </dependency>
+
+            <!-- Camel -->
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-core</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-jms</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
+
+            <!-- For the netty component -->
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-netty</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-jetty</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-mail</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-spring</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-quartz</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-zipfile</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-jaxb</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
+            
+            <!-- Camel Nagios -->
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-nagios</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.googlecode</groupId>
+                <artifactId>jsendnsca-core</artifactId>
+                <version>${jsendnsca-version}</version>
+            </dependency>
+
+            <!-- Camel Crypto -->
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-crypto</artifactId>
+                <version>${camel.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-test</artifactId>
+                <version>${camel.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-test-spring</artifactId>
+                <version>${camel.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- Spring -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-core</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-expression</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-beans</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context-support</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-jdbc</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-web</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-aop</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-aspects</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-tx</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            
+            <dependency>
+				<groupId>org.springframework.retry</groupId>
+				<artifactId>spring-retry</artifactId>
+				<version>${spring.retry.version}</version>
+			</dependency>
+            <!-- for SpringJUnit4ClassRunner -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-test</artifactId>
+                <version>${spring.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- Active MQ -->
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>activemq-client</artifactId>
+                <version>${activemq.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>activemq-camel</artifactId>
+                <version>${activemq.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>activemq-pool</artifactId>
+                <version>${activemq.version}</version>
+            </dependency>
+            
+            <!-- JPA Provider (Hibernate) -->
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-entitymanager</artifactId>
+                <version>${hibernate.version}</version>
+            </dependency>
+ 
+            <!-- Spring Data JPA -->
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-jpa</artifactId>
+                <version>${spring.data.version}</version>
+            </dependency>
+            
+            <!-- Logging -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>1.7.7</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>1.7.7</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jul-to-slf4j</artifactId>
+                <version>1.7.7</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.7.7</version>
+            </dependency>
+
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>1.2.17</version>
+            </dependency>
+
+            <!-- DataSource (HikariCP) -->
+            <dependency>
+                <groupId>com.zaxxer</groupId>
+                <artifactId>HikariCP-java6</artifactId>
+                <version>2.3.9</version>
+                <scope>compile</scope>
+            </dependency>   
+                
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>1.4.185</version>
+            </dependency>
+                        
+            <!-- Testing -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- JMX -->
+            <dependency>
+                <groupId>com.central1.cap.java6.monitor</groupId>
+                <artifactId>monitor</artifactId>
+                <version>${jmx.version}</version>
+            </dependency>
+           
+           <!-- AssertJ --> 
+           <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.central1</groupId>
+                <artifactId>boeClient</artifactId>
+                <version>0.1.2</version>
+            </dependency>
+            
+        </dependencies>
+    </dependencyManagement>
+    <profiles>
+        <profile>
+            <id>owasp</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                        <version>1.4.5</version>
+                        <configuration>
+                            <format>XML</format>
+                            <dataDirectory>${user.home}/.cve.db</dataDirectory>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>aggregate</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
