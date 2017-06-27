@@ -265,6 +265,12 @@ public class App
 		Struct s = new Struct();
 		parseMavenPoms( log, mvnCommand, pathToPom, s.groupNames, s.moduleNames );
 
+		if ( s.groupNames.isEmpty() || s.moduleNames.isEmpty() )
+		{
+			log.addBuildLogEntry( "push0ver - ERROR parsing output from mvn dependency:tree (is there a BUILD FAILURE?)" );
+			throw new RuntimeException( "push0ver - ERROR parsing output from mvn dependency:tree (is there a BUILD FAILURE?)" );
+		}
+
 		String group = s.groupNames.get( 0 ).replace( '.', '/' );
 		String checkTarget = artUrl + repoName + "/" + group + "/" + s.moduleNames.get( 0 ) + "/" + tag;
 		if ( !tag.contains( "-SNAPSHOT" ) )
@@ -322,24 +328,29 @@ public class App
 		{
 			// Keep an eye out for "BUILD FAILURE" in mvn dependency:tree output,
 			// and dump the output to the log if it happens.
-			last500.add(line);
-			while (last500.size() > 500) {
-				last500.remove(0);
+			last500.add( line );
+			while ( last500.size() > 500 )
+			{
+				last500.remove( 0 );
 			}
-			if (linesSinceBuildFailure < 0 && line.contains("BUILD FAILURE")) {
+			if ( linesSinceBuildFailure < 0 && line.contains( "BUILD FAILURE" ) )
+			{
 				linesSinceBuildFailure = 0;
-			} else if (linesSinceBuildFailure >= 0) {
+			}
+			else if ( linesSinceBuildFailure >= 0 )
+			{
 				linesSinceBuildFailure++;
 
-				if (linesSinceBuildFailure == 100) {
-					for (String traceLine: last500) {
-						log.addBuildLogEntry("push0ver - mvn:dependency output: " + traceLine);
+				if ( linesSinceBuildFailure == 100 )
+				{
+					for ( String traceLine : last500 )
+					{
+						log.addBuildLogEntry( "push0ver - mvn:dependency output: " + traceLine );
 					}
 					last500.clear();
 					linesSinceBuildFailure = -1;
 				}
 			}
-
 
 			if ( line.startsWith( "[WARNING]" ) )
 			{
@@ -381,9 +392,11 @@ public class App
 		}
 
 		// Did we notice "BUILD FAILURE" in mvn dependency:tree output?
-		if (linesSinceBuildFailure >= 0) {
-			for (String traceLine: last500) {
-				log.addBuildLogEntry("push0ver - mvn dependency:tree output: " + traceLine);
+		if ( linesSinceBuildFailure >= 0 )
+		{
+			for ( String traceLine : last500 )
+			{
+				log.addBuildLogEntry( "push0ver - mvn dependency:tree output: " + traceLine );
 			}
 		}
 
