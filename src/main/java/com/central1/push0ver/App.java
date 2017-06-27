@@ -20,6 +20,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -314,9 +315,32 @@ public class App
 	{
 		String line;
 		boolean lookingForInfo = false;
+		List<String> last500 = new LinkedList<>();
 		List<String> complete = new ArrayList<String>();
+		int linesSinceBuildFailure = -1;
 		while ( ( line = br.readLine() ) != null )
 		{
+			// Keep an eye out for "BUILD FAILURE" in mvn dependency:tree output,
+			// and dump the output to the log if it happens.
+			last500.add(line);
+			while (last500.size() > 500) {
+				last500.remove(0);
+			}
+			if (linesSinceBuildFailure < 0 && line.contains("BUILD FAILURE")) {
+				linesSinceBuildFailure = 0;
+			} else if (linesSinceBuildFailure >= 0) {
+				linesSinceBuildFailure++;
+
+				if (linesSinceBuildFailure == 100) {
+					for (String traceLine: last500) {
+						log.addBuildLogEntry("push0ver - mvn:dependency output: " + traceLine);
+					}
+					last500.clear();
+					linesSinceBuildFailure = -1;
+				}
+			}
+
+
 			if ( line.startsWith( "[WARNING]" ) )
 			{
 				continue;
@@ -355,6 +379,14 @@ public class App
 				lookingForInfo = true;
 			}
 		}
+
+		// Did we notice "BUILD FAILURE" in mvn dependency:tree output?
+		if (linesSinceBuildFailure >= 0) {
+			for (String traceLine: last500) {
+				log.addBuildLogEntry("push0ver - mvn dependency:tree output: " + traceLine);
+			}
+		}
+
 		for ( String b : complete )
 		{
 			String[] temp = b.split( ":" );
