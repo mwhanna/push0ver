@@ -112,6 +112,13 @@ public class AdminServlet extends HttpServlet
 			pluginSettings.put( PLUGIN_STORAGE_KEY + ".snaprepo", noSnapname );
 		}
 
+		if ( pluginSettings.get( PLUGIN_STORAGE_KEY + ".noderepo" ) == null ||
+				pluginSettings.get( PLUGIN_STORAGE_KEY + ".noderepo" ).equals( "" ) )
+		{
+			String noNodename = "Empty";
+			pluginSettings.put( PLUGIN_STORAGE_KEY + ".noderepo", noNodename );
+		}
+
 		if ( pluginSettings.get( PLUGIN_STORAGE_KEY + ".globalclient" ) == null )
 		{
 			pluginSettings.put( PLUGIN_STORAGE_KEY + ".globalclient", "false" );
@@ -122,6 +129,7 @@ public class AdminServlet extends HttpServlet
 		context.put( "url", pluginSettings.get( PLUGIN_STORAGE_KEY + ".url" ) );
 		context.put( "releaserepo", pluginSettings.get( PLUGIN_STORAGE_KEY + ".releaserepo" ) );
 		context.put( "snaprepo", pluginSettings.get( PLUGIN_STORAGE_KEY + ".snaprepo" ) );
+		context.put( "noderepo", pluginSettings.get( PLUGIN_STORAGE_KEY + ".noderepo" ) );
 		context.put( "globalclient", pluginSettings.get( PLUGIN_STORAGE_KEY + ".globalclient" ) );
 
 		response.setContentType( "text/html;charset=utf-8" );
@@ -138,6 +146,7 @@ public class AdminServlet extends HttpServlet
 		pluginSettings.put( PLUGIN_STORAGE_KEY + ".url", req.getParameter( "url" ) );
 		pluginSettings.put( PLUGIN_STORAGE_KEY + ".releaserepo", req.getParameter( "releaserepo" ) );
 		pluginSettings.put( PLUGIN_STORAGE_KEY + ".snaprepo", req.getParameter( "snaprepo" ) );
+		pluginSettings.put( PLUGIN_STORAGE_KEY + ".noderepo", req.getParameter("noderepo"));
 		pluginSettings.put( PLUGIN_STORAGE_KEY + ".globalclient", req.getParameter( "globalclient" ) );
 		response.sendRedirect( "admin" );
 	}

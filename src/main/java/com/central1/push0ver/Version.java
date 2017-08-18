@@ -17,6 +17,7 @@ limitations under the License.
 package com.central1.push0ver;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 
 /**
  * A "Version" object that implements Comparable in a way that tends to match what humans expect
@@ -30,10 +31,23 @@ public class Version implements Comparable<Version>
 	private final String version;
 	private final String[] split;
 
-	public Version( String version )
+	public Version( final String version )
 	{
-		this.version = version != null ? version.trim() : "";
-		String[] v1 = version.trim().split( "\\." );
+		String v = version != null ? version.trim() : "";
+
+		// Special logic for versions that start with 'v' e.g., 'v1.2.3'
+		if (v.length() > 1) {
+			char c = v.charAt(0);
+			char d = v.charAt(1);
+			if (c == 'v' || c == 'V') {
+				if (d >= '0' && d <= '9') {
+					v = v.substring(1);
+				}
+			}
+		}
+
+		this.version = version.trim();
+		String[] v1 = v.trim().split( "\\." );
 		String[] v2 = new String[ v1.length + 1 ];
 		System.arraycopy( v1, 0, v2, 0, v1.length );
 		v2[ v2.length - 1 ] = ""; // very important: append empty-string to version split.
@@ -60,6 +74,10 @@ public class Version implements Comparable<Version>
 	public int hashCode()
 	{
 		return toString().hashCode();
+	}
+
+	public boolean isSnapshot() {
+		return this.version.toUpperCase().contains("-SNAPSHOT");
 	}
 
 	public int compareTo( @Nullable Version v )

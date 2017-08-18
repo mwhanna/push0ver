@@ -2,6 +2,7 @@
 [@ww.label labelKey="push0ver.task.username" name="taskusername"/]
 [@ww.label labelKey="push0ver.task.password" name="taskpassword"/]
 [@ww.label labelKey="push0ver.task.releaserepo" name="taskreleaserepo"/]
+[@ww.label labelKey="push0ver.task.noderepo" name="tasknoderepo"/]
 [@ww.label labelKey="push0ver.task.snaprepo" name="tasksnaprepo"/]
 [@ww.label labelKey="push0ver.task.url" name="taskurl"/]
 [@ww.label labelKey="push0ver.mvnhome" name="mavenhome"/]

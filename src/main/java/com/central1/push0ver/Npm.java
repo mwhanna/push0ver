@@ -26,7 +26,7 @@ public class Npm
 		// https://artifactory.oss.central1.com/artifactory/api/npm/npm-virtual/@c1%2Fc1-devkit
 
 		CloseableHttpClient httpClient = Rename.allConnect( true );
-		HttpGet get = new HttpGet( "https://artifactory.oss.central1.com/artifactory/api/npm/npm-virtual/@c1%2Fc1-devkit" );
+		HttpGet get = new HttpGet( "https://artifactory.oss.central1.com/artifactory/api/npm/npm-local/@c1%2Fc1-devkit" );
 		CloseableHttpResponse response = null;
 		response = httpClient.execute( get );
 		StatusLine statusLine = response.getStatusLine();

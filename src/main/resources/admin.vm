@@ -27,6 +27,10 @@
         <label for="snaprepo">Artifactory RepoName - SNAPSHOT</label>
         <input type="text" id="snaprepo" name="snaprepo" value=$snaprepo class="text">
       </div>
+        <div class="field-group">
+            <label for="noderepo">Artifactory NPM Repo</label>
+            <input type="text" id="noderepo" name="noderepo" value=$noderepo class="text">
+        </div>
       <div class="field-group">
         <input type="checkbox" name="globalclient" value=$globalclient> Allow Unsecured Connections<br>
       </div>

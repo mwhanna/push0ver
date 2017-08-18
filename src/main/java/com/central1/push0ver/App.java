@@ -16,17 +16,22 @@ limitations under the License.
 
 package com.central1.push0ver;
 
+
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.DatatypeConverter;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonStreamParser;
 
 public class App
 {
@@ -34,15 +39,10 @@ public class App
 
 	public static void main( String[] args ) throws Exception
 	{
-		invoke( args, System.getProperties(), new MyLogger()
-		{
-			@Override
-			public String addBuildLogEntry( String logLine )
-			{
-				System.out.println( logLine );
-				return logLine;
-			}
-		} );
+		invoke( args, System.getProperties(), logLine -> {
+			System.out.println( logLine );
+			return logLine;
+		});
 	}
 
 	public static void invoke( final String[] args, final Properties p, final MyLogger log ) throws Exception
@@ -54,52 +54,20 @@ public class App
 			pathToPom = ".";
 		}
 
-		// Need to check "push0ver.windup.txt" early because we MUST delete this file if it exists.
-		// Otherwise we risk polluting a subsequent run if this file is accidentally left behind.
-		String windupStatus = null;
-		File pretest = new File( pathToPom + "/push0ver.windup.txt" );
-		if ( pretest.exists() )
-		{
-			FileInputStream fin = null;
-			InputStreamReader isr = null;
-			BufferedReader br = null;
-			StringBuilder buf = new StringBuilder();
-			try
-			{
-				fin = new FileInputStream( pretest );
-				isr = new InputStreamReader( fin, "UTF-8" );
-				br = new BufferedReader( isr );
-				String line;
-				while ( ( line = br.readLine() ) != null )
-				{
-					buf.append( line ).append( '\n' );
-				}
-			}
-			finally
-			{
-				Finally.close( br, isr, fin );
-				boolean deleteSucceeded = pretest.delete();
-				if ( !deleteSucceeded )
-				{
-					log.addBuildLogEntry( "push0ver - WARNING: failed to delete [" + pretest.getAbsolutePath() + "]" );
-				}
-			}
-			windupStatus = buf.toString().trim();
-		}
-
 		String userName = null;
 		String userPassword = null;
 		boolean doSomething = true;
 
 		final boolean sslTrustAll = "true".equalsIgnoreCase( p.getProperty( "ssl.trustAll" ) );
 		final boolean doPush = args.length > 1 && "push".equalsIgnoreCase( args[ 1 ] );
-		String repoName = null;
+		String mvnRepoName = null;
 		String snapRepo = null;
+		String nodeRepo = null;
 		String url = null;
 		String userHome = System.getProperty( "user.home" );
 		if ( p.getProperty( "repo.name" ) != null )
 		{
-			repoName = p.getProperty( "repo.name" );
+			mvnRepoName = p.getProperty( "repo.name" );
 		}
 		else
 		{
@@ -123,6 +91,16 @@ public class App
 		else
 		{
 			log.addBuildLogEntry( "push0ver - You forgot to enter a Repository URL! (-Dart.url=x)" );
+			doSomething = false;
+		}
+
+		if ( p.getProperty("noderepo.name") != null )
+		{
+			nodeRepo = p.getProperty( "noderepo.name" );
+		}
+		else
+		{
+			log.addBuildLogEntry( "push0ver - You forgot to enter an Node Repository! (-Dnoderepo.name=x)" );
 			doSomething = false;
 		}
 
@@ -168,70 +146,114 @@ public class App
 			gitTarget = gitRepo;
 		}
 
+		String[] badTag = new String[1];
 		fetchTags( log, gitTarget );
-		String tag = TagExtractor.getTag( gitTarget, false, log, null );
-		if ( tag == null )
-		{
-			log.addBuildLogEntry( "push0ver - ABORTING - unable to extract valid release or snapshot tag." );
-			return;
-		}
+		Map<String, Tag> tags = TagExtractor.getTag( gitTarget, pathToPom,false, log, badTag);
 
-		log.addBuildLogEntry( "push0ver - EXTRACTED TAG:       " + tag );
-		final String basicAuthHeader = basicAuthHeader( userName, userPassword );
-
-		if ( tag.contains( "SNAPSHOT" ) )
+		if ( tags != null && tags.size() > 0 )
 		{
-			if ( snapRepo == null || "".equals( snapRepo ) )
+			for (Tag t : tags.values())
 			{
-				log.addBuildLogEntry( "push0ver - No Global or Local Repo set for SNAPSHOT, using RELEASE Repo." );
-			}
-			else
-			{
-				repoName = snapRepo;
-			}
-		}
+                if ( t == null )
+                {
+                    log.addBuildLogEntry( "push0ver - ABORTING - unable to extract valid release or snapshot tag." );
+                    return;
+                }
 
-		Struct struct = checkIfAlreadyReleased(
-				tag, log, mvnCommand, pathToPom, basicAuthHeader, url, gitTarget, repoName );
-		if ( struct == null )
-		{
-			return;
-		}
-		tag = struct.tag;
+                String windupStatus = extractAndDeletePreStatus(pathToPom, t, log);
 
-		String search = "0".substring( 0, 1 ) + ".0.0.0.0-SNAPSHOT";
-		// If windupStatus ==  null, then push0ver-windup did not run, so no need to check its status.
-		if ( windupStatus != null )
-		{
-			if ( !"pre=valid".equals( windupStatus ) )
-			{
-				log.addBuildLogEntry( "push0ver - Windup was run! ABORTING: no valid tag found: [" + windupStatus + "]" );
-				return;
-			}
-			log.addBuildLogEntry( "push0ver - Windup was run!" );
-			search = tag;
-		}
+                log.addBuildLogEntry( "push0ver - EXTRACTED TAG:       " + t );
+                final String basicAuthHeader = basicAuthHeader( userName, userPassword );
 
-		log.addBuildLogEntry( "push0ver - Will Execute:  " + String.valueOf( doSomething ) + " Based on: " + pathToPom );
+                if ( t.getVersion().toString().contains( "SNAPSHOT" ) )
+                {
+                    if ( snapRepo == null || "".equals( snapRepo ) )
+                    {
+                        log.addBuildLogEntry( "push0ver - No Global or Local Repo set for SNAPSHOT, using RELEASE Repo." );
+                    }
+                    else
+                    {
+                        mvnRepoName = snapRepo;
+                    }
+                }
 
-		for ( int z = 0; z < struct.moduleNames.size(); z++ )
-		{
-			if ( doSomething )
-			{
-				String m = struct.moduleNames.get( z );
-				String g = struct.groupNames.get( z );
-				g = g.replace( '.', '/' );
-				String target = userHome + "/.m2/repository/" + g + "/" + m + "/" + search;
-				Rename r = new Rename( pathToPom, m, g, tag, repoName, basicAuthHeader, url, log, sslTrustAll );
+                String search = "0".substring( 0, 1 ) + ".0.0.0.0-SNAPSHOT";
+
+				Set<File> matches = new HashSet<>();
+                if ( windupStatus != null )
+                {
+					String[] lines = windupStatus.split("[\\r\\n]+");
+					for (int i = 1; i < lines.length; i++) {
+						matches.add(new File(lines[i]).getCanonicalFile());
+					}
+
+                    if ( !windupStatus.startsWith("pre=valid\n"))
+                    {
+                        log.addBuildLogEntry( "push0ver - Windup was run! ABORTING: no valid tag found: [" + windupStatus + "]" );
+                        return;
+                    }
+                    log.addBuildLogEntry( "push0ver - Windup was run!" );
+                    search = t.getVersion().toString();
+                }
+
+                log.addBuildLogEntry( "push0ver - Will Execute:  " + String.valueOf( doSomething ) + " Based on: " + pathToPom + t.getDirectory() );
+                final Rename r = new Rename(pathToPom, t, mvnRepoName, nodeRepo, basicAuthHeader, url, log, sslTrustAll );
+
 				try
 				{
-					r.renameJars( search, tag, target, doPush );
+					if ( t.isMaven() )
+					{
+						MavenStruct struct = mavenCheckIfAlreadyReleased(
+								t, log, mvnCommand, pathToPom, basicAuthHeader, url, gitTarget, mvnRepoName
+						);
+						if (struct != null) {
+							for (int z = 0; z < struct.moduleNames.size(); z++) {
+								if (doSomething) {
+									String m = struct.moduleNames.get(z);
+									String g = struct.groupNames.get(z);
+									g = g.replace('.', '/');
+									String target = userHome + "/.m2/repository/" + g + "/" + m + "/" + search;
+									r.renameJars(search, t.getVersion().toString(), target, g, m, doPush);
+								}
+							}
+						}
+					}
+					if ( t.isNode() )
+					{
+						NodeStruct struct = nodeCheckIfAlreadyReleased(
+								t, log, pathToPom, basicAuthHeader, url, nodeRepo );
+
+						if ( struct != null && doSomething )
+						{
+							File root = new File( pathToPom + t.getDirectory() );
+							Files.walk( root.toPath() )
+									.map( Path::toFile )
+									.forEach( f -> {
+
+										String name = f.getName();
+										if ( "package.json".equalsIgnoreCase( name ) )
+										{
+											f = canonical( f );
+											if ( matches.contains( f ) )
+											{
+												r.npmPublish( f, doPush );
+											}
+											else
+											{
+												log.addBuildLogEntry( "Ignoring [" + f.getPath()
+														+ "] since it did not contain the sentinel (0.0.0-PUSH0VE" + "R)" );
+											}
+										}
+
+									} );
+						}
+					}
 				}
 				finally
 				{
 					if ( doPush )
 					{
-						if ( !containsWhiteSpace( pathToPom ) )
+						if ( false && !containsWhiteSpace( pathToPom ) )
 						{
 							String[] param = new String[]{"rm", "-rf", pathToPom + "/target/updates"};
 							r.exec( param, null );
@@ -247,23 +269,79 @@ public class App
 						}
 					}
 				}
-			}
+            }
 		}
 	}
 
-	public static class Struct
+	public static class MavenStruct
 	{
-		public String tag;
+		public Tag tag;
 		public final List<String> groupNames = new ArrayList<String>();
 		public final List<String> moduleNames = new ArrayList<String>();
 	}
 
-	public static Struct checkIfAlreadyReleased(
-			String tag, MyLogger log, String mvnCommand, String pathToPom, String basicAuthHeader, String artUrl,
+	public static class NodeStruct {
+		public Tag tag;
+		public String packageName;
+	}
+
+	private static File canonical(File f) {
+		try {
+			return f.getCanonicalFile();
+		} catch (IOException ioe) {
+			throw new RuntimeException("f.getCanonicalFile() failed: " + ioe);
+		}
+	}
+
+	public static NodeStruct nodeCheckIfAlreadyReleased(
+			Tag tag, MyLogger log, String pathToPackage, String basicAuthHeader, String url,
+			 String repoName
+	) throws IOException
+	{
+		File path = new File ( pathToPackage + tag.getDirectory() + "/package.json" );
+		NodeStruct n = new NodeStruct();
+
+		if ( path.exists() ) {
+			InputStream in = new FileInputStream(path.getAbsolutePath());
+			InputStreamReader isr = new InputStreamReader( in, StandardCharsets.UTF_8 );
+			BufferedReader br = new BufferedReader( isr );
+			JsonStreamParser p = new JsonStreamParser( br );
+			String name = "";
+			String version = "";
+			if ( p.hasNext() ) {
+                JsonObject json = p.next().getAsJsonObject();
+                JsonPrimitive namePrimitive = json.getAsJsonPrimitive("name");
+                JsonPrimitive versionPrimitive = json.getAsJsonPrimitive("version");
+                name = namePrimitive.getAsString();
+                version = versionPrimitive.getAsString();
+            }
+
+			String targetName = name.replace("/", "%2F");
+			String target = url + "api/npm/" + repoName + "/" + targetName + "/-/" + targetName + "-" + tag.getVersion().toString() + ".tgz";
+			if ( !tag.getVersion().toString().contains( "-SNAPSHOT" ) )
+			{
+				if ( exists( log, target, basicAuthHeader ) )
+				{
+					log.addBuildLogEntry("push0ver: " + tag.toString() + " exists in artifactory, skipping push0ver");
+					return null;
+				}
+
+			}
+			n.tag = tag;
+			n.packageName = name;
+			return n;
+		}
+		return null;
+	}
+
+
+
+	public static MavenStruct mavenCheckIfAlreadyReleased(
+			Tag tag, MyLogger log, String mvnCommand, String pathToPom, String basicAuthHeader, String artUrl,
 			String gitTarget, String repoName ) throws IOException
 	{
-		Struct s = new Struct();
-		parseMavenPoms( log, mvnCommand, pathToPom, s.groupNames, s.moduleNames );
+		MavenStruct s = new MavenStruct();
+		parseMavenPoms( log, mvnCommand, pathToPom + tag.getDirectory(), s.groupNames, s.moduleNames );
 
 		if ( s.groupNames.isEmpty() || s.moduleNames.isEmpty() )
 		{
@@ -272,20 +350,17 @@ public class App
 		}
 
 		String group = s.groupNames.get( 0 ).replace( '.', '/' );
-		String checkTarget = artUrl + repoName + "/" + group + "/" + s.moduleNames.get( 0 ) + "/" + tag;
-		if ( !tag.contains( "-SNAPSHOT" ) )
+		String checkTarget = artUrl + repoName + "/" + group + "/" + s.moduleNames.get( 0 ) + "/" + tag.getVersion();
+		if ( !tag.getVersion().toString().contains( "-SNAPSHOT" ) )
 		{
-			final String releaseTag = tag;
+
 			if ( exists( log, checkTarget, basicAuthHeader ) )
 			{
-				tag = TagExtractor.getTag( gitTarget, true, log, null );
-				if ( tag == null || releaseTag.equals( tag ) )
-				{
-					log.addBuildLogEntry( "push0ver - RELEASE " + releaseTag + " ALREADY PUBLISHED TO ARTIFACTORY! (" + checkTarget + ")" );
-					return null;
-				}
-				log.addBuildLogEntry( "push0ver - RELEASE " + releaseTag + " ALREADY PUBLISHED TO ARTIFACTORY! SWITCHING TAG TO: " + tag );
+				log.addBuildLogEntry("push0ver: " + tag.toString() + " exists in artifactory, skipping push0ver");
+
+				return null;
 			}
+
 		}
 		s.tag = tag;
 		return s;
@@ -305,6 +380,7 @@ public class App
 		process.waitFor();
 		// process.waitFor( 2, TimeUnit.SECONDS );
 	}
+
 
 	private static void parseMavenPoms(
 			MyLogger log, String mvn, String pom, List<String> groupNames, List<String> moduleNames ) throws IOException
@@ -406,6 +482,43 @@ public class App
 			groupNames.add( temp[ 0 ] );
 			moduleNames.add( temp[ 1 ] );
 			log.addBuildLogEntry( "push0ver - EXTRACTED: " + temp[ 0 ] + "." + temp[ 1 ] );
+		}
+	}
+
+	private static String extractAndDeletePreStatus( String pathToPom, Tag t, MyLogger log ) throws IOException
+	{
+		File pretest = new File( pathToPom + t.getDirectory() + File.separator + "push0ver.windup.txt" );
+		if ( pretest.exists() )
+		{
+			FileInputStream fin = null;
+			InputStreamReader isr = null;
+			BufferedReader br = null;
+			StringBuilder buf = new StringBuilder();
+			try
+			{
+				fin = new FileInputStream( pretest );
+				isr = new InputStreamReader( fin, "UTF-8" );
+				br = new BufferedReader( isr );
+				String line;
+				while ( ( line = br.readLine() ) != null )
+				{
+					buf.append( line ).append( '\n' );
+				}
+			}
+			finally
+			{
+				Finally.close( br, isr, fin );
+				boolean deleteSucceeded = pretest.delete();
+				if ( !deleteSucceeded )
+				{
+					log.addBuildLogEntry( "push0ver - WARNING: failed to delete [" + pretest.getAbsolutePath() + "]" );
+				}
+			}
+			return buf.toString().trim();
+		}
+		else
+		{
+			return null;
 		}
 	}
 
@@ -512,7 +625,7 @@ public class App
 		return matcher.find();
 	}
 
-	public static boolean exists( MyLogger log, String target, String basicAuthHeader )
+	public static boolean exists(MyLogger log, String target, String basicAuthHeader )
 	{
 		try
 		{

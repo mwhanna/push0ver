@@ -25,7 +25,7 @@ limitations under the License.
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>push0ver</groupId>
 	<artifactId>push0ver</artifactId>
-	<version>1.0.5</version>
+	<version>2017.06.54</version>
 
 	<organization>
 		<name>7th Floor Inc.</name>
@@ -39,8 +39,8 @@ limitations under the License.
 	<packaging>atlassian-plugin</packaging>
 
 	<properties>
-		<bamboo.version>5.6.0</bamboo.version>
-		<bamboo.data.version>5.6.0</bamboo.data.version>
+		<bamboo.version>6.0.3</bamboo.version>
+		<bamboo.data.version>6.0.3</bamboo.data.version>
 		<amps.version>6.0.9</amps.version>
 		<plugin.testrunner.version>1.2.3</plugin.testrunner.version>
 		<atlassian.spring.scanner.version>1.2.6</atlassian.spring.scanner.version>
@@ -240,7 +240,8 @@ limitations under the License.
 					<skipITs>true</skipITs>
 					<productVersion>${bamboo.version}</productVersion>
 					<productDataVersion>${bamboo.data.version}</productDataVersion>
-					<enableFastdev>true</enableFastdev>
+					<!--<productDataPath>${basedir}/src/test/resources/generated-test-resources.zip</productDataPath>-->
+					<enableFastdev>false</enableFastdev>
 					<enableQuickReload>true</enableQuickReload>
 					<compressResources>false</compressResources>
 					<pluginDependencies>
@@ -308,6 +309,14 @@ limitations under the License.
 						</dependency>
 					</scannedDependencies>
 					<verbose>false</verbose>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
 				</configuration>
 			</plugin>
 		</plugins>

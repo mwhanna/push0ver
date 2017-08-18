@@ -38,41 +38,40 @@ public class TagExtractor
 {
 	public static void main( String[] args ) throws IOException
 	{
-		final StringBuilder logBuf = new StringBuilder(5000);
-	    MyLogger logger = new MyLogger() {
-			@Override
-			public String addBuildLogEntry(String logLine) {
-				logBuf.append(logLine).append('\n');
-				return logLine;
-			}
+		final StringBuilder logBuf = new StringBuilder( 5000 );
+		MyLogger logger = logLine -> {
+			System.out.println( logLine );
+			return logLine;
 		};
 
-	    // Travel up until we find the ".git" dir.
-	    File projectDir = new File(".").getCanonicalFile();
-	    File gitDir = new File(projectDir + "/.git");
-	    while (!gitDir.exists()) {
-	        projectDir = projectDir.getParentFile();
-	        gitDir = new File(projectDir + "/.git");
-        }
-
-		String tag = getTag(projectDir.getAbsolutePath(), false, logger, null );
-
-		if ( tag != null )
+		// Travel up until we find the ".git" dir.
+		File projectDir = new File( "." ).getCanonicalFile();
+		File gitDir = new File( projectDir + "/.git" );
+		while ( !gitDir.exists() )
 		{
-			System.out.println( tag );
+			projectDir = projectDir.getParentFile();
+			gitDir = new File( projectDir + "/.git" );
+		}
+
+		Map<String, Tag> tags = getTag(
+				gitDir.getAbsolutePath(), projectDir.getAbsolutePath(), false, logger, null
+		);
+		if ( tags != null && !tags.isEmpty() )
+		{
+			System.out.println( tags.get( "." ).getVersion().toString() );
 		}
 		else
 		{
 			System.out.println( "NO TAG" );
-			System.out.println(logBuf.toString());
+			System.out.println( logBuf.toString() );
 		}
 	}
 
-	public static String getTag( String projectDir, boolean releaseExists, MyLogger log, String[] badTag )
+	public static Map<String, Tag> getTag( String gitDir, String projectDir, boolean releaseExists, MyLogger log, String[] badTag )
 	{
 		// Use " git symbolic-ref --short HEAD " to get current branch.
 		// Including "current branch" in log messages (especially error messages) makes them more useful.
-		String cmd = "git --no-pager --git-dir=" + projectDir + "/.git symbolic-ref --short HEAD ";
+		String cmd = "git --no-pager --git-dir=" + gitDir + "/.git symbolic-ref --short HEAD ";
 		String[] command = cmd.split( " " );
 
 		String currentBranch;
@@ -108,14 +107,14 @@ public class TagExtractor
 		}
 
 		// Get last 1000 commits to scan for possible release and snapshot tags:
-		cmd = "git --no-pager --git-dir=" + projectDir + "/.git log --pretty=%d --first-parent --max-count=1000";
+		cmd = "git --no-pager --git-dir=" + gitDir + "/.git log --pretty=%d --first-parent --max-count=1000";
 		command = cmd.split( " " );
 		try
 		{
 			process = Runtime.getRuntime().exec( command );
 			in = process.getInputStream();
 			isr = new InputStreamReader( in, "UTF-8" );
-			return extractTag( isr, releaseExists, log, badTag, currentBranch );
+			return extractTag( projectDir, isr, releaseExists, log, badTag, currentBranch );
 		}
 		catch ( IOException ioe )
 		{
@@ -139,27 +138,35 @@ public class TagExtractor
 
 	static String extractTagTestLogic( Reader r )
 	{
-		return extractTag( r, false, null, null, "master" );
+		Map<String, Tag> tags = extractTag( ".", r, false, null, null, "master" );
+		if ( tags == null || tags.isEmpty() )
+		{
+			return null;
+		}
+		else
+		{
+			return tags.get( "" ).getVersion().toString();
+		}
 	}
 
-	static String extractTag( Reader r, boolean releaseExists, MyLogger log, String[] badTag, String currentBranch )
+	static Map<String, Tag> extractTag( String projectDir, Reader r, boolean releaseExists, MyLogger log, String[] badTag, String currentBranch )
 	{
 		Set<String> alreadyLoggedInvalids = new TreeSet<String>();
 		BufferedReader br = null;
-		String tag = null;
+		Map<String, Tag> tag = null;
 		try
 		{
 			br = r instanceof BufferedReader ? (BufferedReader) r : new BufferedReader( r );
 			String line = br.readLine();
 
 			// Is there a release in current tag (first line of "git log" command")?
-			final String releaseTag = extractTag( line, TagMode.RELEASE, log, alreadyLoggedInvalids );
+			final Map<String, Tag> releaseTag = extractTag( projectDir, line, TagMode.RELEASE, log, alreadyLoggedInvalids );
 			tag = releaseTag;
 
 			// Special "release exists" logic if snapshot tag on same commit AND release exists in artifactory.
 			if ( releaseTag != null && releaseExists )
 			{
-				String snapshot = extractTag( line, TagMode.SNAPSHOT, null, alreadyLoggedInvalids );
+				Map<String, Tag> snapshot = extractTag( projectDir, line, TagMode.SNAPSHOT, null, alreadyLoggedInvalids );
 				return snapshotIfLarger( releaseTag, snapshot );
 			}
 
@@ -167,7 +174,7 @@ public class TagExtractor
 			if ( tag == null )
 			{
 				// okay, what about a SNAPSHOT?
-				tag = extractTag( line, TagMode.SNAPSHOT, log, alreadyLoggedInvalids );
+				tag = extractTag( projectDir, line, TagMode.SNAPSHOT, log, alreadyLoggedInvalids );
 			}
 
 			// No release in current commit, so let's go back in history and look for
@@ -177,13 +184,13 @@ public class TagExtractor
 			{
 				lineCount++;
 				// First check if a release tag is there:
-				tag = extractTag( line, TagMode.RELEASE, log, alreadyLoggedInvalids );
+				tag = extractTag( projectDir, line, TagMode.RELEASE, log, alreadyLoggedInvalids );
 				if ( tag != null )
 				{
 					// Release tags after the 0th position kills our search for a "SNAPSHOT" tag.
 					// But if this tag happens to have SNAPSHOT, we can return that:
-					String snapshot = extractTag( line, TagMode.SNAPSHOT, log, alreadyLoggedInvalids );
-					String snapshotIfLarger = snapshotIfLarger( tag, snapshot );
+					Map<String, Tag> snapshot = extractTag( projectDir, line, TagMode.SNAPSHOT, log, alreadyLoggedInvalids );
+					Map<String, Tag> snapshotIfLarger = snapshotIfLarger( tag, snapshot );
 					if ( snapshot == null || snapshotIfLarger == null )
 					{
 						int staleCount = lineCount - 1;
@@ -201,7 +208,7 @@ public class TagExtractor
 						if ( badTag != null && badTag.length > 0 )
 						{
 							// e.g. "1.2.3-PUSH0VER-22" to indicate a 22-commits stale version.
-							badTag[ 0 ] = tag + "-PUSH0VER-" + staleCount;
+							badTag[ 0 ] = tag + "-AND-" + staleCount + "-COMMITS";
 						}
 						return null;
 					}
@@ -209,7 +216,7 @@ public class TagExtractor
 				}
 
 				// If release tag didn't kill our search, look for SNAPSHOT tag:
-				tag = extractTag( line, TagMode.SNAPSHOT, log, alreadyLoggedInvalids );
+				tag = extractTag( projectDir, line, TagMode.SNAPSHOT, log, alreadyLoggedInvalids );
 			}
 
 		}
@@ -237,7 +244,7 @@ public class TagExtractor
 		return tag;
 	}
 
-	private static String snapshotIfLarger( String tag, String snapshot )
+	private static Map<String, Tag> snapshotIfLarger( Map<String, Tag> tag, Map<String, Tag> snapshot )
 	{
 		// Non-null is larger:
 		if ( snapshot == null )
@@ -249,50 +256,30 @@ public class TagExtractor
 			return snapshot;
 		}
 
-		// Okay, both not null.  Examine them properly:
-		Version v1 = new Version( tag );
-		Version v2 = new Version( snapshot );
-		if ( v2.compareTo( v1 ) > 0 )
-		{
-			// SNAPSHOT must be larger.
-			// (But not just larger because it ends in "-SNAPSHOT"!)
-			if ( snapshot.equals( tag + "-SNAPSHOT" ) )
-			{
-				return null;
-			}
-			else
-			{
-				return snapshot;
+		Map<String, Tag> result = new HashMap<>();
+		for (String dir : snapshot.keySet()) {
+			Tag snap = snapshot.get(dir);
+			Tag rel = tag.get(dir);
+			if (rel == null || rel.compareTo(snap) < 0) {
+				String relVer = rel != null ? rel.getVersion().toString() : "";
+				String snapVer = snap.getVersion().toString();
+				if (!snapVer.equalsIgnoreCase(relVer + "-SNAPSHOT")) {
+					result.put(dir, snap);
+				}
 			}
 		}
-		else
-		{
-			return null;
-		}
+
+		return result.isEmpty() ? null : result;
 	}
 
-	/**
-	 * We're only interested in tags where the 1st character of the tag is a digit.
-	 *
-	 * @param s tag to examine
-	 * @return true if the tag is valid (1st character is a digit).
-	 */
-	private static boolean isValidTag( String s )
+	private enum BuildType
 	{
-		s = s != null ? s.trim() : "";
-		char c = s.length() > 0 ? s.charAt( 0 ) : 0;
-		return c >= '0' && c <= '9'; // Character.isDigit() is too complicated.
+		NPM,
+		MAVEN
 	}
 
-	private enum TagMode
-	{
-		ALL,
-		RELEASE,
-		SNAPSHOT
-	}
-
-	private static String extractTag(
-			String tagString, TagMode mode, MyLogger log, Set<String> alreadyLoggedInvalids )
+	private static Map<String, Tag> extractTag(
+			String projectDir, String tagString, TagMode mode, MyLogger log, Set<String> alreadyLoggedInvalids )
 	{
 		tagString = tagString != null ? tagString.trim() : "";
 		if ( tagString.length() >= 2 )
@@ -309,55 +296,78 @@ public class TagExtractor
 		tagString = tagString.trim();
 
 		String[] toks = tagString.split( ", " );
-		List<Version> versions = new ArrayList<Version>();
+		List<Tag> tags = new ArrayList<Tag>();
 		for ( String t : toks )
 		{
 			if ( t.contains( "tag: " ) )
 			{
 				t = t.substring( 5 );
-				boolean isValid = isValidTag( t );
+				Tag tag = new Tag( projectDir, t, log );
+
+				// boolean isValid = isValidTag( t );
+				boolean isValid = tag.isValid();
 				if ( !isValid && !alreadyLoggedInvalids.contains( t ) )
 				{
 					if ( log != null )
 					{
-						log.addBuildLogEntry( "push0ver - IGNORING TAG \"" + t
-								+ "\" since the 1st character is not a digit." );
+						if ( tag.hasSlashes() )
+						{
+							log.addBuildLogEntry( "push0ver - IGNORING TAG \"" + t
+									+ "\" since the 1st character after the last slash is not a digit." );
+						}
+						else
+						{
+							log.addBuildLogEntry( "push0ver - IGNORING TAG \"" + t
+									+ "\" since the 1st character is not a digit." );
+						}
 						alreadyLoggedInvalids.add( t );
 					}
 				}
 				if ( isValid )
 				{
-					Version v = new Version( t );
-					boolean containsSnapshot = t.toUpperCase( Locale.ENGLISH ).contains( "-SNAPSHOT" );
 					switch ( mode )
 					{
 						case ALL:
-							versions.add( v );
+							tags.add( tag );
 							break;
 						case SNAPSHOT:
-							if ( containsSnapshot )
+							if ( tag.containsSnapshot() )
 							{
-								versions.add( v );
+								tags.add( tag );
 							}
 							break;
 						case RELEASE:
-							if ( !containsSnapshot )
+							if ( !tag.containsSnapshot() )
 							{
-								versions.add( v );
+								tags.add( tag );
 							}
 					}
 				}
 			}
 		}
-		if ( !versions.isEmpty() )
+		if ( !tags.isEmpty() )
 		{
-			// Return "biggest" tag !
-			Collections.sort( versions, Collections.reverseOrder() );
-			return versions.get( 0 ).toString();
+			// Return "biggest" tag (for each subdir):
+			return coalesce(tags);
 		}
 		else
 		{
 			return null;
 		}
+	}
+
+	private static Map<String, Tag> coalesce(List<Tag> tags) {
+
+		// Turn our list into map keyed by sub-directory to biggest tag.
+
+		Map<String, Tag> byDir = new HashMap<>();
+		for (Tag t : tags) {
+			String dir = t.getDirectory();
+			Tag other = byDir.get(dir);
+			if (other == null || other.compareTo(t) < 0) {
+				byDir.put(dir, t);
+			}
+		}
+		return byDir;
 	}
 }

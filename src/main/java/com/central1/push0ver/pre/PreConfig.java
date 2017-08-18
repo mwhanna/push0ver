@@ -26,7 +26,7 @@ import com.atlassian.bamboo.utils.error.ErrorCollection;
 public class PreConfig extends AbstractTaskConfigurator
 {
 	private String[] toFill = { "tasklocaldir", "allowAllConnect", "defaultcheckbox", "taskusername", "mavenhome",
-			"taskpassword", "taskurl", "taskreleaserepo", "tasksnaprepo"
+			"taskpassword", "taskurl", "taskreleaserepo", "tasksnaprepo", "tasknoderepo"
 	};
 
 	public Map<String, String> generateTaskConfigMap( final ActionParametersMap params, final TaskDefinition previousTaskDefinition )

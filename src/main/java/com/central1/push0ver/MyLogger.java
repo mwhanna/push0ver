@@ -19,6 +19,6 @@ package com.central1.push0ver;
 public interface MyLogger
 {
 
-	String addBuildLogEntry( String logLine );
+	public String addBuildLogEntry( String logLine);
 
 }

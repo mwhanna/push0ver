@@ -126,4 +126,10 @@ public class TagExtractorTest
 		Assert.assertNull( TagExtractor.extractTagTestLogic( r ) );
 	}
 
+	public static void main( String[] args )
+	{
+		TagExtractorTest t = new TagExtractorTest();
+
+		t.testCases();
+	}
 }

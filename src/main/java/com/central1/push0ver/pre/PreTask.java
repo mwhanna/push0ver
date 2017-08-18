@@ -54,7 +54,7 @@ public class PreTask implements TaskType
 	public TaskResult execute( TaskContext taskContext ) throws TaskException
 	{
 		TaskResultBuilder taskResultBuilder = TaskResultBuilder.newBuilder( taskContext );
-		PluginSettings settings = pluginSettingsFactory.createGlobalSettings();
+PluginSettings settings =	 pluginSettingsFactory.createGlobalSettings();
 		Map<String, Object> context = new HashMap<String, Object>();
 		final BuildLogger log = taskContext.getBuildLogger();
 
@@ -63,6 +63,7 @@ public class PreTask implements TaskType
 		context.put( "url", settings.get( PLUGIN_STORAGE_KEY + ".url" ) );
 		context.put( "releaserepo", settings.get( PLUGIN_STORAGE_KEY + ".releaserepo" ) );
 		context.put( "globalclient", settings.get( PLUGIN_STORAGE_KEY + ".globalclient" ) );
+		context.put( "noderepo", settings.get( PLUGIN_STORAGE_KEY + ".noderepo"));
 
 		final String globalConfig = taskContext.getConfigurationMap().get( "defaultcheckbox" );
 		String taskClient = taskContext.getConfigurationMap().get( "allowAllConnect" );
@@ -82,6 +83,7 @@ public class PreTask implements TaskType
 		String taskPassword = nullTrim(taskContext.getConfigurationMap().get("taskpassword"));
 		String taskUrl = nullTrim(taskContext.getConfigurationMap().get("taskurl"));
 		String taskReleaseRepo = nullTrim(taskContext.getConfigurationMap().get("taskreleaserepo"));
+		String taskNodeRepo = nullTrim(taskContext.getConfigurationMap().get("tasknoderepo"));
 
 		if ( globalConfig.equals( "true" ) )
 		{
@@ -89,6 +91,7 @@ public class PreTask implements TaskType
 			taskPassword = checkGlobalConfig( taskPassword, "password", context );
 			taskUrl = checkGlobalConfig( taskUrl, "url", context );
 			taskReleaseRepo = checkGlobalConfig( taskReleaseRepo, "releaserepo", context );
+			taskNodeRepo = checkGlobalConfig( taskNodeRepo, "noderepo", context );
 		}
 
 		if ( taskUsername.equals( "Empty" ) || taskPassword.equals( "Empty" ) )
@@ -115,18 +118,17 @@ public class PreTask implements TaskType
 
 		try
 		{
-			String[] arg = new String[]{localdir};
 			p.setProperty( "art.username", taskUsername );
 			p.setProperty( "art.password", taskPassword );
 			p.setProperty( "repo.name", taskReleaseRepo );
+			p.setProperty( "noderepo.name", taskNodeRepo);
 			p.setProperty( "art.url", taskUrl );
 			p.setProperty( "mvn.home", mavenHome );
 			p.setProperty( "ssl.trustAll", Boolean.toString( sslTrustAll ) );
-			PreApp.invoke( arg, p, new MyLogger() {
-				@Override
-				public String addBuildLogEntry(String s) {
-					return log.addBuildLogEntry(s);
-				}
+
+			String[] arg = new String[]{localdir};
+			PreApp.invoke( arg, p, logLine -> {
+				return log.addBuildLogEntry(logLine);
 			});
 		}
 		catch ( Exception e )

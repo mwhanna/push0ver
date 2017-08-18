@@ -38,7 +38,7 @@ import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.central1.push0ver.App;
 import com.central1.push0ver.MyLogger;
 
-@ExportAsService( {PostTask.class} )
+//@ExportAsService( {PostTask.class} )
 @Named( "PostTask" )
 public class PostTask implements TaskType
 {
@@ -53,6 +53,7 @@ public class PostTask implements TaskType
 		this.pluginSettingsFactory = pluginSettingsFactory;
 	}
 
+	@Override
 	public TaskResult execute( TaskContext taskContext ) throws TaskException
 	{
 		final BuildLogger log = taskContext.getBuildLogger();
@@ -65,6 +66,7 @@ public class PostTask implements TaskType
 		context.put( "url", settings.get( PLUGIN_STORAGE_KEY + ".url" ) );
 		context.put( "releaserepo", settings.get( PLUGIN_STORAGE_KEY + ".releaserepo" ) );
 		context.put( "snaprepo", settings.get( PLUGIN_STORAGE_KEY + ".snaprepo" ) );
+		context.put( "noderepo", settings.get( PLUGIN_STORAGE_KEY + ".noderepo" ) );
 		context.put( "globalclient", settings.get( PLUGIN_STORAGE_KEY + ".globalclient" ) );
 
 		final String globalConfig = taskContext.getConfigurationMap().get( "checkbox" );
@@ -87,6 +89,7 @@ public class PostTask implements TaskType
 		String taskUrl = nullTrim(taskContext.getConfigurationMap().get("taskurl"));
 		String taskReleaseRepo = nullTrim(taskContext.getConfigurationMap().get("taskreleaserepo"));
 		String taskSnapRepo = nullTrim(taskContext.getConfigurationMap().get("tasksnaprepo"));
+		String taskNodeRepo = nullTrim(taskContext.getConfigurationMap().get("tasknoderepo"));
 
 		String push = "";
 		if ( pushCheckBox.equals( "true" ) )
@@ -101,9 +104,11 @@ public class PostTask implements TaskType
 			taskUrl = checkGlobalConfig( taskUrl, "url", context );
 			taskReleaseRepo = checkGlobalConfig( taskReleaseRepo, "releaserepo", context );
 			taskSnapRepo = checkGlobalConfig( taskSnapRepo, "snaprepo", context );
+			taskNodeRepo = checkGlobalConfig( taskNodeRepo, "noderepo", context );
 		}
 
 		log.addBuildLogEntry( "push0ver - RELEASE REPO:  " + taskReleaseRepo );
+		log.addBuildLogEntry( "push0ver - NODE REPO:  " + taskNodeRepo );
 
 		if ( taskUsername.equals( "Empty" ) || taskPassword.equals( "Empty" ) )
 		{
@@ -136,12 +141,10 @@ public class PostTask implements TaskType
 			p.setProperty( "art.password", taskPassword );
 			p.setProperty( "art.url", taskUrl );
 			p.setProperty( "mvn.home", mavenHome );
+			p.setProperty( "noderepo.name", taskNodeRepo);
 			p.setProperty( "ssl.trustAll", Boolean.toString( sslTrustAll ) );
-			App.invoke( arg, p, new MyLogger() {
-				@Override
-				public String addBuildLogEntry(String s) {
-					return log.addBuildLogEntry(s);
-				}
+			App.invoke( arg, p, logLine ->  {
+					return log.addBuildLogEntry(logLine);
 			});
 		}
 		catch ( Exception e )

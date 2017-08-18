@@ -33,17 +33,8 @@ public class VersionComparators
 	{
 		public int compare( String s1, String s2 )
 		{
-			if ( s1 == null && s2 == null )
-			{
-				return 0;
-			}
-			else if ( s1 == null )
-			{
-				return -1;
-			}
-			else if ( s2 == null )
-			{
-				return 1;
+			if (anyIsNull(s1, s2)) {
+				return compareNulls(s1, s2);
 			}
 			else
 			{
@@ -56,17 +47,8 @@ public class VersionComparators
 	{
 		public int compare( Version v1, Version v2 )
 		{
-			if ( v1 == null && v2 == null )
-			{
-				return 0;
-			}
-			else if ( v1 == null )
-			{
-				return -1;
-			}
-			else if ( v2 == null )
-			{
-				return 1;
+			if (anyIsNull(v1, v2)) {
+				return compareNulls(v1, v2);
 			}
 			else
 			{
@@ -87,17 +69,8 @@ public class VersionComparators
 					}
 				}
 
-				// last-resort comparison:  lengths
-				Integer len1 = ver1.length;
-				Integer len2 = ver2.length;
-				c = len1.compareTo( len2 );
-				if ( c == 0 )
-				{
-					len1 = v1.toString().length();
-					len2 = v2.toString().length();
-					c = len1.compareTo( len2 );
-				}
-				return c;
+				// last-resort comparison:  lexicographic (toString)
+				return v1.toString().compareTo(v2.toString());
 			}
 		}
 	};
@@ -366,6 +339,26 @@ public class VersionComparators
 		catch ( NumberFormatException nfe )
 		{
 			return null; // contained alpha, or Number larger than Long.MAX_VALUE ?
+		}
+	}
+
+
+	private static boolean anyIsNull(Object o1, Object o2) {
+		return o1 == null || o2 == null;
+	}
+
+	private static int compareNulls(Object o1, Object o2) {
+		if ( o1 == null && o2 == null )
+		{
+			return 0;
+		}
+		else if ( o1 == null )
+		{
+			return -1;
+		}
+		else
+		{
+			return 1;
 		}
 	}
 }

@@ -4,24 +4,25 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Comparator;
-import java.util.Locale;
+import java.util.*;
 
 public class FileUtil
 {
 
 	// Can't have the SENTINEL appear in source or bytecode here!
 	// (else push0ver might replace it!)
-	private final static String SENTINEL = "0".substring( 0, 1 ) + ".0.0.0.0-SNAPSHOT";
+	private final static String LEGACY_SENTINEL = "0".substring( 0, 1 ) + ".0.0.0.0-SNAPSHOT";
+	private final static String SENTINEL = "0".substring( 0, 1 ) + ".0.0-PUSH0VER";
 
-	public static void injectTagRecursive( File root, String tag, MyLogger log )
+	public static Set<File> injectTagRecursive( File root, String tag, MyLogger log )
 	{
+		Set<File> matches = new TreeSet<>();
 		if ( root != null )
 		{
 			String name = root.getName();
 			if ( "..".equals( name ) )
 			{
-				return;
+				return matches;
 			}
 
 			Path rootPath = Paths.get( root.getAbsolutePath() );
@@ -40,13 +41,14 @@ public class FileUtil
 								{
 									// Don't edit *.class files, it just corrupts them.
 									// Don't edit anything under ".git/"
-									// Don't edit anything under "node_modules/"
+									// Don't edit anything under "node_modules/" (waste of time)
 									return;
 								}
 
 								try
 								{
-									injectTag( f, tag, log );
+									injectTag( f, LEGACY_SENTINEL, tag, log, matches );
+									injectTag( f, SENTINEL, tag, log, matches );
 								}
 								catch ( IOException ioe )
 								{
@@ -60,21 +62,22 @@ public class FileUtil
 				throw new RuntimeException( "Files.walk() failed for [" + root.getAbsolutePath() + "] because " + ioe );
 			}
 		}
+		return matches;
 	}
 
-	public static void injectTag( File f, String tag, MyLogger log ) throws IOException
+	private static void injectTag( File f, String sentinel, String tag, MyLogger log, Set<File> matches ) throws IOException
 	{
 		long millis = System.currentTimeMillis() % 1000;
-		File outputFile = new File( f + ".push0ver" + millis + ".tmp" );
 		boolean deleteSuccess = true;
 		long size = f.length();
 		FileInputStream in = new FileInputStream( f );
 		if ( size < 1000000 )
 		{
 			ByteArrayOutputStream out = new ByteArrayOutputStream( (int) size );
-			boolean foundMatch = BinarySed.replaceAll( f, SENTINEL, tag, in, out );
+			boolean foundMatch = BinarySed.replaceAll( f, sentinel, tag, in, out );
 			if ( foundMatch )
 			{
+				matches.add(f);
 				FileOutputStream fout = null;
 				try
 				{
@@ -94,12 +97,14 @@ public class FileUtil
 		}
 		else
 		{
+			File outputFile = new File( f + ".push0ver" + millis + ".tmp" );
 			try
 			{
 				FileOutputStream out = new FileOutputStream( outputFile );
-				boolean foundMatch = BinarySed.replaceAll( f, SENTINEL, tag, in, out );
+				boolean foundMatch = BinarySed.replaceAll( f, sentinel, tag, in, out );
 				if ( foundMatch )
 				{
+					matches.add(f);
 					if ( !outputFile.renameTo( f ) )
 					{
 						throw new RuntimeException( "Failed to move [" + outputFile.getName() + "] to [" + f.getName() + "]." );
@@ -114,10 +119,10 @@ public class FileUtil
 					deleteSuccess = outputFile.delete();
 				}
 			}
-		}
-		if ( !deleteSuccess )
-		{
-			throw new RuntimeException( "Failed to delete [" + outputFile.getName() + "]." );
+			if ( !deleteSuccess )
+			{
+				throw new RuntimeException( "Failed to delete [" + outputFile.getName() + "]." );
+			}
 		}
 	}
 

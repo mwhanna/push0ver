@@ -18,25 +18,20 @@ package com.central1.push0ver.pre;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
-import com.central1.push0ver.App;
-import com.central1.push0ver.FileUtil;
-import com.central1.push0ver.MyLogger;
-import com.central1.push0ver.TagExtractor;
+import com.central1.push0ver.*;
 
 public class PreApp
 {
 	public static void main( String[] args ) throws Exception
 	{
-		invoke( args, System.getProperties(), new MyLogger()
-		{
-			@Override
-			public String addBuildLogEntry( String logLine )
-			{
-				System.out.println( logLine );
-				return logLine;
-			}
+		invoke( args, System.getProperties(), logLine -> {
+			System.out.println( logLine );
+			return logLine;
 		} );
 	}
 
@@ -44,24 +39,37 @@ public class PreApp
 	{
 		String userName = null;
 		String userPassword = null;
-		String repoName = null;
-		String pathToPom = args.length > 0 ? args[ 0 ] : null;
-		pathToPom = pathToPom != null ? pathToPom.trim() : "";
-		if ( "".equals( pathToPom ) )
+		String mvnRepoName = null;
+		String nodeRepo = null;
+		String pathToEntry = args.length > 0 ? args[ 0 ] : null;
+		pathToEntry = pathToEntry != null ? pathToEntry.trim() : "";
+		if ( "".equals( pathToEntry ) )
 		{
-			pathToPom = ".";
+			pathToEntry = ".";
 		}
-		File parentPomDir = new File( pathToPom );
 
 		if ( p.getProperty( "repo.name" ) != null )
 		{
-			repoName = p.getProperty( "repo.name" );
+			mvnRepoName = p.getProperty( "repo.name" );
 		}
 		else
 		{
 			log.addBuildLogEntry( "push0ver - You forgot to enter a Repository name! (-Drepo.name=x)" );
 		}
 
+		if ( p.getProperty( "noderepo.name" ) != null )
+		{
+			mvnRepoName = p.getProperty( "noderepo.name" );
+		}
+		else
+		{
+			log.addBuildLogEntry( "push0ver - You forgot to enter an NPM Repository name! (-Dnoderepo.name=x)" );
+		}
+
+		if ( p.getProperty( "noderepo.name" ) != null )
+		{
+			nodeRepo = p.getProperty( "noderepo.name" );
+		}
 		if ( p.getProperty( "art.username" ) != null )
 		{
 			userName = p.getProperty( "art.username" );
@@ -71,20 +79,20 @@ public class PreApp
 			userPassword = p.getProperty( "art.password" );
 		}
 
-		String gitRepo = null;
-		String gitTarget = pathToPom;
+		String gitRepo;
+		String gitTarget = pathToEntry;
 		if ( p.getProperty( "git.repo" ) != null )
 		{
 			gitRepo = p.getProperty( "git.repo" );
-		}
-		if ( gitRepo != null )
-		{
-			gitTarget = gitRepo;
+			if ( gitRepo != null )
+			{
+				gitTarget = gitRepo;
+			}
 		}
 
 		final String basicAuthHeader = App.basicAuthHeader( userName, userPassword );
 		String url = p.getProperty( "art.url" );
-		url = url != null ? url.trim() : "";
+		url = ( url != null ) ? url.trim() : "";
 		if ( !url.endsWith( "/" ) )
 		{
 			url = url + "/";
@@ -101,47 +109,101 @@ public class PreApp
 			mvnCommand = pathToMaven.trim() + "/bin/mvn";
 		}
 
-		File n = new File( pathToPom + "/push0ver.windup.txt" );
-		FileWriter pref = new FileWriter( n );
-		String[] badTag = new String[]{null};
+		String[] badTag = new String[ 1 ];
 		App.fetchTags( log, gitTarget );
-		String tag = TagExtractor.getTag( gitTarget, false, log, badTag );
-		try
-		{
-			if ( tag != null )
-			{
-				// Switch to SNAPSHOT if appropriate:
-				App.Struct struct = App.checkIfAlreadyReleased(
-						tag, log, mvnCommand, pathToPom, basicAuthHeader, url, gitTarget, repoName );
-				if ( struct != null )
-				{
-					tag = struct.tag;
-					log.addBuildLogEntry( "push0ver - WINDUP EXTRACTED VALID TAG: " + tag );
-					pref.write( "pre=valid\n" );
-				}
-				else
-				{
-					log.addBuildLogEntry( "push0ver - WINDUP EXTRACTED ALREADY RELEASED TAG: " + tag );
-					pref.write( "pre=released\n" );
-				}
-			}
-			else if ( badTag[ 0 ] != null )
-			{
-				tag = badTag[ 0 ];
-				log.addBuildLogEntry( "push0ver - WINDUP EXTRACTED STALE TAG: " + tag );
-				pref.write( "pre=stale\n" );
-			}
-			else
-			{
-				return;
-			}
-		}
-		finally
-		{
-			pref.close();
-		}
+		Map<String, Tag> tags = TagExtractor.getTag( gitTarget, pathToEntry, false, log, badTag );
 
-		// Replace the SENTINEL with the TAG !
-		FileUtil.injectTagRecursive( parentPomDir, tag, log );
+		if ( tags != null )
+		{
+			for ( Tag tag : tags.values() )
+			{
+				File packageDir = new File( pathToEntry + tag.getDirectory() );
+				File f = new File( pathToEntry + tag.getDirectory() + "/push0ver.windup.txt" );
+				FileWriter pref = new FileWriter( f );
+
+				// Replace the SENTINEL with the TAG !
+				Set<File> matches = new HashSet<>();
+
+				try
+				{
+					if ( packageDir.exists() )
+					{
+						matches = FileUtil.injectTagRecursive( packageDir, tag.getVersion().toString(), log );
+						log.addBuildLogEntry( "Looking at: " + tag.toString() + " isMaven=" + tag.isMaven() + " isNode=" + tag.isNode() );
+
+						App.MavenStruct mavenStruct = null;
+						App.NodeStruct nodeStruct = null;
+						if ( tag.isMaven() )
+						{
+							// Switch to SNAPSHOT if appropriate:
+							mavenStruct = App.mavenCheckIfAlreadyReleased(
+									tag, log, mvnCommand, pathToEntry, basicAuthHeader, url, gitTarget, mvnRepoName );
+						}
+
+						if ( tag.isNode() )
+						{
+							nodeStruct = App.nodeCheckIfAlreadyReleased(
+									tag, log, pathToEntry, basicAuthHeader, url, nodeRepo );
+						}
+
+						if ( mavenStruct != null || nodeStruct != null )
+						{
+
+							if ( mavenStruct != null )
+							{
+								tag = mavenStruct.tag;
+								if ( nodeStruct != null )
+								{
+									log.addBuildLogEntry( "push0ver - WINDUP EXTRACTED VALID NODE+MAVEN TAG: " + tag.getVersion() );
+								}
+								else
+								{
+									log.addBuildLogEntry( "push0ver - WINDUP EXTRACTED VALID MAVEN TAG: " + tag.getVersion() );
+								}
+							}
+							else
+							{
+								tag = nodeStruct.tag;
+								log.addBuildLogEntry( "push0ver - WINDUP EXTRACTED VALID NODE TAG: " + tag.getVersion() );
+							}
+							pref.write( "pre=valid\n" );
+						}
+						else
+						{
+							log.addBuildLogEntry( "push0ver - WINDUP EXTRACTED ALREADY RELEASED TAG: " + tag.getVersion() );
+							pref.write( "pre=released\n" );
+						}
+					}
+					else if ( badTag[ 0 ] != null )
+					{
+						String tagString = badTag[ 0 ];
+						log.addBuildLogEntry( "push0ver - WINDUP EXTRACTED STALE TAG: " + tagString );
+						pref.write( "pre=stale\n" );
+					}
+					else
+					{
+						log.addBuildLogEntry( "what is happening in here" );
+					}
+				}
+				finally
+				{
+					try
+					{
+						for ( File match : matches )
+						{
+							pref.write( match.getAbsolutePath() + "\n" );
+						}
+					}
+					finally
+					{
+						pref.close();
+					}
+				}
+			}
+		}
+		else
+		{
+			log.addBuildLogEntry( "PUSH0VER COULD NOT EXTRACT TAG FROM: " + gitTarget );
+		}
 	}
 }

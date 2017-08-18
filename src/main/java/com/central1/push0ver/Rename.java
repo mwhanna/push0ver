@@ -45,37 +45,40 @@ import com.google.common.io.Files;
 public class Rename
 {
 	private String interimTarget;
-	private String moduleName;
-	private String groupName;
 	private String repoName;
-	private String tag;
+	private String nodeRepo;
+	private Tag tag;
 	private String url;
 	private String basicAuth;
 	private MyLogger buildLogger;
 	private boolean sslTrustAll;
 
+
+
+
 	public Rename(
-			String pathToPom, String moduleName, String groupName, String tag, String repoName, String basicAuth,
-			String url, MyLogger buildLogger, boolean sslTrustAll )
+			String pathToPom, Tag tag, String repoName, String nodeRepo, String basicAuth,
+			String url, MyLogger buildLogger, boolean sslTrustAll)
 	{
-		this.moduleName = moduleName;
-		this.groupName = groupName;
 		this.tag = tag;
 		this.repoName = repoName;
 		this.basicAuth = basicAuth;
+		this.nodeRepo = nodeRepo;
 		this.url = url;
 		if ( !url.endsWith( "/" ) )
 		{
 			this.url = url + "/";
 		}
-		this.interimTarget = new File( pathToPom + "/target" ).getAbsolutePath();
+
+		this.interimTarget = new File( pathToPom + tag.getDirectory() + "/target" ).getAbsolutePath();
 		this.buildLogger = buildLogger;
 		this.sslTrustAll = sslTrustAll;
 		new File( interimTarget + "/newfiles" ).mkdirs();
 		new File( interimTarget + "/updates" ).mkdirs();
 	}
 
-	public void renameJars( String search, String replace, String localRepo, boolean doPush )
+
+	public void renameJars( String search, String replace, String localRepo, String group, String module, boolean doPush )
 	{
 		File folderr = new File( localRepo );
 		buildLogger.addBuildLogEntry( "push0ver - SEARCHING: " + folderr.getPath() );
@@ -84,7 +87,8 @@ public class Rename
 		{
 			if ( listOfFiles.length < 1 )
 			{
-				buildLogger.addBuildLogEntry( "push0ver - No files in " + folderr.getPath() + "  Maven Build may not have been ran" );
+				buildLogger.addBuildLogEntry( "push0ver - No files in " + folderr.getPath()
+						+ "  Maven Build may not have been ran" );
 			}
 			for ( File g : listOfFiles )
 			{
@@ -104,6 +108,7 @@ public class Rename
 					//the final chunk will go to the end of aInput
 					result.append( filename.substring( startIdx ) );
 					filename = result.toString();
+					
 					File target = new File( interimTarget + "/newfiles/" + filename );
 					try
 					{
@@ -113,14 +118,67 @@ public class Rename
 					{
 						throw new RuntimeException( "push0ver failed to move files from .m2 repo: " + ioe );
 					}
-					buildLogger.addBuildLogEntry( "push0ver - renaming " + f.getAbsolutePath() + " to " + target.getAbsolutePath() );
 
+					buildLogger.addBuildLogEntry( "push0ver - renaming "
+							+ f.getAbsolutePath() + " to " + target.getAbsolutePath() );
 				}
 			}
 		}
 
-		updateJars( search, replace, doPush );
+		updateJars( search, replace, group, module, doPush );
 
+	}
+
+	public void publishNode ( File packageDir )
+	{
+		//runs after version replacement
+		String publish = "npm publish --registry " + url + "api/npm/" + nodeRepo + "/";
+		Command nodePublish = new Command(publish);
+		boolean doPublish = false;
+		File[] nodeFiles = packageDir.listFiles();
+
+		for (File f : nodeFiles)
+		{
+			if ( f.isFile() && f.getAbsolutePath().toLowerCase().contains("package.json"))
+			{
+				doPublish = true;
+				break;
+			}
+		}
+
+		if (doPublish)
+		{
+			try
+			{
+				buildLogger.addBuildLogEntry("Executing: " + publish );
+				nodePublish.execute(packageDir);
+				buildLogger.addBuildLogEntry( nodePublish.getStdout());
+			}
+			catch (IOException ioe)
+			{
+				buildLogger.addBuildLogEntry("Caught IOexception: " + ioe.getMessage());
+			}
+		}
+		else
+		{
+			buildLogger.addBuildLogEntry("NO PACKAGE.JSON - skipping npm publish");
+		}
+
+	}
+
+	public void npmPublish( File packageFile, boolean doPush )
+	{
+		String dryRun = doPush ? "" : "(DRY-RUN)";
+		File f = packageFile.getParentFile();
+		if ( f.exists() )
+		{
+			buildLogger.addBuildLogEntry("RUNNING NPM PUBLISH IN: [" + f + "] " + dryRun);
+			if (doPush) {
+				publishNode(f);
+			}
+		} else {
+			buildLogger.addBuildLogEntry("CANNOT NPM PUBLISH [" + f + "] FILE-NOT-FOUND " + dryRun);
+		}
 	}
 
 	private static final Comparator POMS_LAST = new Comparator<File>()
@@ -154,7 +212,7 @@ public class Rename
 		}
 	};
 
-	public void updateJars( String search, String replace, boolean doPush )
+	public void updateJars( String search, String replace, String group, String module, boolean doPush )
 	{
 		File[] files = new File( interimTarget + "/newfiles" ).listFiles();
 		if ( files == null )
@@ -167,7 +225,13 @@ public class Rename
 		long currentTime = System.currentTimeMillis();
 		for ( File f : files )
 		{
+
 			String n = f.getName().toUpperCase();
+			if ( n.toLowerCase().endsWith(".uploaded"))
+			{
+				continue;
+			}
+
 			if ( n.endsWith( ".POM" ) )
 			{
 				try
@@ -237,34 +301,38 @@ public class Rename
 				-u deployer:deployer
 			https://artifactory.oss.central1.com/artifactory/simple/Central1-local/com/matt2/app/my-app/0.0.3-SNAPSHOT/my-app-0.0.3-SNAPSHOT.jar
 			*/
+			String version = tag.getVersion().toString();
 			String name = f.getName();
-			if ( name.contains( tag ) && !name.endsWith( ".md5" ) && !name.endsWith( ".sha1" ) )
+			if ( name.contains( version ) && !name.endsWith( ".md5" ) && !name.endsWith( ".sha1" ) )
 			{
-				if ( !tag.endsWith( "-SNAPSHOT" ) )
+				if ( !version.endsWith( "-SNAPSHOT" ) )
 				{
-					String existsSha1Target = existsTarget( name ) + ".sha1";
+					String existsSha1Target = existsTarget( name, group, module ) + ".sha1";
 					if ( App.exists( buildLogger, existsSha1Target, basicAuth ) )
 					{
-						buildLogger.addBuildLogEntry( "push0ver - File " + existsTarget( name ) + " Already Exists! Aborting." );
+						buildLogger.addBuildLogEntry( "push0ver - File " + existsTarget( name, group, module ) + " Already Exists! Aborting." );
 						return;
 					}
 				}
 
-				makeFingerprints( f );
+				mvnMakeFingerprints( f );
 				String fileToUpload = f.getAbsolutePath();
 				CloseableHttpClient httpClient = allConnect( sslTrustAll );
 				HttpPut[] puts = new HttpPut[ 3 ];
-				puts[ 0 ] = new HttpPut( uploadTarget( name, tag, currentTime ) );
-				puts[ 1 ] = new HttpPut( uploadTarget( name + ".md5", tag, currentTime ) );
-				puts[ 2 ] = new HttpPut( uploadTarget( name + ".sha1", tag, currentTime ) );
+				puts[ 0 ] = new HttpPut( uploadTarget( name, version, group, module, currentTime ) );
+				puts[ 1 ] = new HttpPut( uploadTarget( name + ".md5", version, group, module, currentTime ) );
+				puts[ 2 ] = new HttpPut( uploadTarget( name + ".sha1", version, group, module, currentTime ) );
+
+				File md5 = new File( fileToUpload + ".md5" );
+				File sha1 = new File( fileToUpload + ".sha1" );
 
 				HttpEntity entity = new FileEntity( f );
 				puts[ 0 ].setEntity( entity );
 
-				HttpEntity entitymd5 = new FileEntity( new File( fileToUpload + ".md5" ) );
+				HttpEntity entitymd5 = new FileEntity( md5 );
 				puts[ 1 ].setEntity( entitymd5 );
 
-				HttpEntity entitysha1 = new FileEntity( new File( fileToUpload + ".sha1" ) );
+				HttpEntity entitysha1 = new FileEntity( sha1 );
 				puts[ 2 ].setEntity( entitysha1 );
 
 				for ( int t = 0; t < 3; t++ )
@@ -287,7 +355,7 @@ public class Rename
 
 							if ( Integer.parseInt( tempCode ) == 4 || Integer.parseInt( tempCode ) == 5 )
 							{
-								buildLogger.addBuildLogEntry( "push0ver - ERROR! DID NOT UPLOAD:  ----     " + response.getStatusLine() );
+								buildLogger.addBuildLogEntry( "push0ver - ERROR! DID NOT UPLOAD: " + fileToUpload + "--    error code: " + response.getStatusLine() );
 
 								if ( statusCode == 502 )
 								{
@@ -298,6 +366,7 @@ public class Rename
 									throw new RuntimeException( "FAILED to push to Artifactory - See Logs." );
 								}
 							}
+
 						}
 						catch ( IOException a )
 						{
@@ -328,6 +397,12 @@ public class Rename
 						buildLogger.addBuildLogEntry( "push0ver - WOULD-DO:    " + puts[ t ] );
 					}
 				}
+
+
+				md5.renameTo(new File(md5.getAbsolutePath() + ".uploaded"));
+				sha1.renameTo(new File(sha1.getAbsolutePath() + ".uploaded"));
+				f.renameTo(new File(f.getAbsolutePath() + ".uploaded"));
+
 				try
 				{
 					httpClient.close();
@@ -340,7 +415,7 @@ public class Rename
 		}
 	}
 
-	private void makeFingerprints( File f )
+	private void mvnMakeFingerprints(File f )
 	{
 		try
 		{
@@ -398,17 +473,15 @@ public class Rename
 				|| name.endsWith( ".INI" );
 	}
 
-	private String uploadTarget( String fileName, String tag, long timestamp )
+	private String uploadTarget( String fileName, String tag, String group, String module, long timestamp )
 	{
-		String group = groupName.replace( '.', '/' );
-		String target = url + repoName + "/" + group + "/" + moduleName + "/" + tag + "/" + fileName;
+		String target = url + repoName + "/" + group + "/" + module + "/" + tag + "/" + fileName;
 		return target + "?build.timestamp=" + timestamp;
 	}
 
-	private String existsTarget( String fileName )
+	private String existsTarget( String fileName, String group, String module )
 	{
-		return url + repoName + "/" +
-				groupName.replace( '.', '/' ) + "/" + moduleName + "/" + tag + "/" + fileName;
+		return url + repoName + "/" + group + "/" + module + "/" + tag.getVersion() + "/" + fileName;
 	}
 
 	private static String readAndReplace( File f, String search, String replace ) throws IOException
