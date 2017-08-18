@@ -23,6 +23,7 @@ limitations under the License.
         <param name="plugin-icon">icon.png</param>
         <param name="plugin-logo">icon.png</param>
         <param name="configure.url">/plugins/servlet/pushover/admin</param>
+        <param name="atlassian-data-center-compatible">true</param>
     </plugin-info>
 
     <servlet key="admin-servlet" class="com.central1.push0ver.post.AdminServlet" name="Push0verAdminServlet">
