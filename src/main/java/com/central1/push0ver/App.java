@@ -101,7 +101,6 @@ public class App
 		else
 		{
 			log.addBuildLogEntry( "push0ver - You forgot to enter an Node Repository! (-Dnoderepo.name=x)" );
-			doSomething = false;
 		}
 
 		if ( p.getProperty( "art.username" ) != null )

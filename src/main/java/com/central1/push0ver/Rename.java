@@ -296,11 +296,6 @@ public class Rename
 				}
 			}
 
-			/*
-			curl -i -X PUT -T /opt/central1/version-experiment/target/newfiles/my-app-0.0.3-SNAPSHOT.jar
-				-u deployer:deployer
-			https://artifactory.oss.central1.com/artifactory/simple/Central1-local/com/matt2/app/my-app/0.0.3-SNAPSHOT/my-app-0.0.3-SNAPSHOT.jar
-			*/
 			String version = tag.getVersion().toString();
 			String name = f.getName();
 			if ( name.contains( version ) && !name.endsWith( ".md5" ) && !name.endsWith( ".sha1" ) )
